@@ -9,18 +9,21 @@ from nano_graphrag.base import BaseKVStorage
 from nano_graphrag._utils import compute_args_hash, wrap_embedding_func_with_attrs
 import glob
 import os
+import argparse
 
 logging.basicConfig(level=logging.WARNING)
 logging.getLogger("nano-graphrag").setLevel(logging.INFO)
 
-# Setting
-RETRIEVE_AGAIN = False
 # QUERY_QUESTION = "What is web3?"
 # QUERY_QUESTION = "Provide a summary of the development history of web3"
-QUERY_QUESTION = "How does Bitcoin enhance the privacy level of transactions when compared to the traditional banking model?​"
+# QUERY_QUESTION = "How does Bitcoin enhance the privacy level of transactions when compared to the traditional banking model?​"
+QUERY_QUESTION = None
+
+# Settings
+RETRIEVE_AGAIN = False
 
 # Path setup
-web3_text_path = "/research/d2/msc/khsew24/cryptoKGTutorial/txtWhitePapers/*.txt"
+# web3_text_path = "/research/d2/msc/khsew24/cryptoKGTutorial/txtWhitePapers/*.txt"
 
 # Assumed llm model settings
 LLM_BASE_URL = os.getenv("LLM_BASE_URL")
@@ -82,21 +85,25 @@ def query():
         cheap_model_func=llm_model_if_cache,
         embedding_func=ollama_embedding,
     )
-    print(
-        rag.query(
-            QUERY_QUESTION, param=QueryParam(mode="global")
+
+    # Open the file in write mode
+    with open(args.output_path, "w") as file:
+        # Use the print function with the file parameter
+        print(
+            rag.query(
+                QUERY_QUESTION, param=QueryParam(mode="global")
+            ),
+            file=file
         )
-    )
-
-
-def insert():
+        
+def insert(documents_directory_path):
     from time import time
 
     # with open("./tests/mock_data.txt", encoding="utf-8-sig") as f:
     #     FAKE_TEXT = f.read()
 
     file_contents_list = []
-    file_list = glob.glob(web3_text_path)
+    file_list = glob.glob(documents_directory_path+'/'+'*.txt')
     for filename in file_list:
         with open(filename, 'r', encoding='utf-8-sig') as file:
             # Read the contents of the file
@@ -137,6 +144,28 @@ async def ollama_embedding(texts :list[str]) -> np.ndarray:
     return embed_text
 
 if __name__ == "__main__":
-    if RETRIEVE_AGAIN:
-        insert()
-    query()
+    # Create the parser
+    parser = argparse.ArgumentParser(description="Script to process files with input and output paths.")
+
+    # Add input and output arguments
+    parser.add_argument('--run_insert', action='store_true', help='Whether to run insert() again')
+    parser.add_argument('--run_query', action='store_true', help='Whether to run query()')
+    parser.add_argument('--documents_path', type=str, required=True, help='Path to the document directory')
+    parser.add_argument('--input_path', type=str, required=True, help='Path to the input file')
+    parser.add_argument('--output_path', type=str, required=True, help='Path to the output file')
+
+    # Parse the arguments
+    args = parser.parse_args()
+
+    # Open the file in read mode and read its contents into a string
+    with open(args.input_path, "r") as file:
+        QUERY_QUESTION = file.read()  # Read the entire file as a single string
+    
+    print(f'QUERY_QUESTION read from file: {QUERY_QUESTION}')
+
+    print(f'args.run_insert={args.run_insert}')
+    if args.run_insert:
+        insert(args.documents_path)
+
+    if args.run_query():
+        query()

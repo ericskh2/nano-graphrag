@@ -13,7 +13,12 @@ logging.getLogger("nano-graphrag").setLevel(logging.INFO)
 
 # !!! qwen2-7B maybe produce unparsable results and cause the extraction of graph to fail.
 WORKING_DIR = "./nano_graphrag_cache_ollama_TEST"
-MODEL = "qwen2"
+# MODEL = "qwen2"
+MODEL = "qwen2:ctx32k"
+# MODEL = "qwen2:ctx40k"
+# MODEL = "deepseek-v2"
+# MODEL = "llama3.2"
+# MODEL = "llama3.2:ctx32k"
 
 EMBED_MODEL = SentenceTransformer(
     "sentence-transformers/all-MiniLM-L6-v2", cache_folder=WORKING_DIR, device="cpu"
