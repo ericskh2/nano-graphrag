@@ -157,16 +157,15 @@ if __name__ == "__main__":
     # Parse the arguments
     args = parser.parse_args()
 
-    # Open the file in read mode and read its contents into a string
-    with open(args.input_path, "r") as file:
-        QUERY_QUESTION = file.read()  # Read the entire file as a single string
-    
-    print(f'QUERY_QUESTION read from file: {QUERY_QUESTION}')
-
     print(f'args.run_insert={args.run_insert}')
     if args.run_insert:
         insert(args.documents_path)
 
     print(f'args.run_query={args.run_query}')
     if args.run_query:
+        # Open the file in read mode and read its contents into a string
+        with open(args.input_path, "r") as file:
+            QUERY_QUESTION = file.read()  # Read the entire file as a single string
+        
+        print(f'QUERY_QUESTION read from file: {QUERY_QUESTION}')
         query()
