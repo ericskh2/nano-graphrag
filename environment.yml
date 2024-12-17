@@ -1,0 +1,14 @@
+name: /research/d2/msc/khsew24/conda_envs/nano-graphrag
+channels:
+  - defaults
+dependencies:
+  - python=3.10
+  - conda-forge::ollama
+  - conda-forge::sentence-transformers
+  - pyarrow
+  - pyarrow-all
+  - pytorch
+  - pytorch-cuda=12.1
+  - torchaudio
+  - torchvision
+prefix: /research/d2/msc/khsew24/conda_envs/nano-graphrag
