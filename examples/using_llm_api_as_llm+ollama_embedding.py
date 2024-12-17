@@ -167,5 +167,6 @@ if __name__ == "__main__":
     if args.run_insert:
         insert(args.documents_path)
 
-    if args.run_query():
+    print(f'args.run_query={args.run_query}')
+    if args.run_query:
         query()
