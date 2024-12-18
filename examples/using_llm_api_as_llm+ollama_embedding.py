@@ -31,9 +31,9 @@ LLM_API_KEY = os.getenv("LLM_API_KEY")
 MODEL = "deepseek-chat"
 
 # Assumed embedding model settings
-EMBEDDING_MODEL = "nomic-embed-text"
+EMBEDDING_MODEL = "nomic-embed-text:ctx32k"
 EMBEDDING_MODEL_DIM = 768
-EMBEDDING_MODEL_MAX_TOKENS = 8192
+EMBEDDING_MODEL_MAX_TOKENS = 32000
 
 SYSTEM_PROMPT_TEMPLATE = "You are an intelligent assistant and will follow the instructions given to you to fulfill the goal. The answer should be in the format as in the given example."
 
@@ -52,11 +52,12 @@ async def llm_model_if_cache(
     hashing_kv: BaseKVStorage = kwargs.pop("hashing_kv", None)
     messages.extend(history_messages)
     messages.append({"role": "user", "content": prompt})
-    # if hashing_kv is not None:
-    #     args_hash = compute_args_hash(MODEL, messages)
-    #     if_cache_return = await hashing_kv.get_by_id(args_hash)
-    #     if if_cache_return is not None:
-    #         return if_cache_return["return"]
+    
+    if hashing_kv is not None:
+        args_hash = compute_args_hash(MODEL, messages)
+        if_cache_return = await hashing_kv.get_by_id(args_hash)
+        if if_cache_return is not None:
+            return if_cache_return["return"]
     # -----------------------------------------------------
 
     # print(messages)
@@ -68,10 +69,10 @@ async def llm_model_if_cache(
     )
 
     # Cache the response if having-------------------
-    # if hashing_kv is not None:
-    #     await hashing_kv.upsert(
-    #         {args_hash: {"return": response.choices[0].message.content, "model": MODEL}}
-    #     )
+    if hashing_kv is not None:
+        await hashing_kv.upsert(
+            {args_hash: {"return": response.choices[0].message.content, "model": MODEL}}
+        )
     # -----------------------------------------------------
 
     # print(response.choices[0].message.content)
@@ -83,8 +84,7 @@ def remove_if_exist(file):
         os.remove(file)
 
 
-WORKING_DIR = "./nano_graphrag_cache_llm_TEST"
-
+WORKING_DIR = "./nano_graphrag_cache_llm_TEST_multihop"
 
 def query():
     rag = GraphRAG(
@@ -118,11 +118,11 @@ def insert(documents_directory_path):
             file_contents = file.read()
             file_contents_list.append(file_contents)
 
-    remove_if_exist(f"{WORKING_DIR}/vdb_entities.json")
-    remove_if_exist(f"{WORKING_DIR}/kv_store_full_docs.json")
-    remove_if_exist(f"{WORKING_DIR}/kv_store_text_chunks.json")
-    remove_if_exist(f"{WORKING_DIR}/kv_store_community_reports.json")
-    remove_if_exist(f"{WORKING_DIR}/graph_chunk_entity_relation.graphml")
+    # remove_if_exist(f"{WORKING_DIR}/vdb_entities.json")
+    # remove_if_exist(f"{WORKING_DIR}/kv_store_full_docs.json")
+    # remove_if_exist(f"{WORKING_DIR}/kv_store_text_chunks.json")
+    # remove_if_exist(f"{WORKING_DIR}/kv_store_community_reports.json")
+    # remove_if_exist(f"{WORKING_DIR}/graph_chunk_entity_relation.graphml")
 
     rag = GraphRAG(
         working_dir=WORKING_DIR,
