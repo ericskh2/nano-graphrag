@@ -35,15 +35,17 @@ EMBEDDING_MODEL = "nomic-embed-text"
 EMBEDDING_MODEL_DIM = 768
 EMBEDDING_MODEL_MAX_TOKENS = 8192
 
+SYSTEM_PROMPT_TEMPLATE = "You are an intelligent assistant and will follow the instructions given to you to fulfill the goal. The answer should be in the format as in the given example."
 
 async def llm_model_if_cache(
-    prompt, system_prompt=None, history_messages=[], **kwargs
+    prompt, system_prompt=SYSTEM_PROMPT_TEMPLATE, history_messages=[], **kwargs
 ) -> str:
     openai_async_client = AsyncOpenAI(
         api_key=LLM_API_KEY, base_url=LLM_BASE_URL
     )
     messages = []
     if system_prompt:
+        # print('YES')
         messages.append({"role": "system", "content": system_prompt})
 
     # Get the cached response if having-------------------
@@ -57,6 +59,10 @@ async def llm_model_if_cache(
     #         return if_cache_return["return"]
     # -----------------------------------------------------
 
+    # print(messages)
+    
+    # print('-'*10)
+
     response = await openai_async_client.chat.completions.create(
         model=MODEL, messages=messages, **kwargs
     )
@@ -67,6 +73,8 @@ async def llm_model_if_cache(
     #         {args_hash: {"return": response.choices[0].message.content, "model": MODEL}}
     #     )
     # -----------------------------------------------------
+
+    # print(response.choices[0].message.content)
     return response.choices[0].message.content
 
 
