@@ -129,6 +129,7 @@ def insert(documents_directory_path):
     file_list = glob.glob(documents_directory_path+'/'+'*.txt')
     for filename in file_list:
         with open(filename, 'r', encoding='utf-8-sig') as file:
+            print(f'using_llm_api_as_llm+ollama_embedding.py: Inserting document {filename}')
             # Read the contents of the file
             file_contents = file.read()
             rag.insert(file_contents)
