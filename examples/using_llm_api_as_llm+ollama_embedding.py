@@ -34,7 +34,8 @@ EMBEDDING_MODEL_MAX_TOKENS = 32000
 
 SYSTEM_PROMPT_TEMPLATE = "You are an intelligent assistant and will follow the instructions given to you to fulfill the goal. The answer should be in the format as in the given example."
 
-WORKING_DIR = "./nano_graphrag_cache_llm_TEST_multihop"
+WORKING_DIR = None
+# WORKING_DIR = "./nano_graphrag_cache_llm_TEST_multihop"
 
 async def llm_model_if_cache(
     prompt, system_prompt=SYSTEM_PROMPT_TEMPLATE, history_messages=[], **kwargs
@@ -94,7 +95,7 @@ def query():
     )
 
     # Open the file in write mode
-    with open(args.output_path, "w") as file:
+    with open(args.query_output_path, "w") as file:
         # Use the print function with the file parameter
         print(
             rag.query(
@@ -160,13 +161,16 @@ if __name__ == "__main__":
     # Add input and output arguments
     parser.add_argument('--run_insert', action='store_true', help='Whether to run insert() again')
     parser.add_argument('--run_query', action='store_true', help='Whether to run query()')
-    parser.add_argument('--documents_path', type=str, required=True, help='Path to the document directory')
-    parser.add_argument('--input_path', type=str, required=True, help='Path to the input file')
-    parser.add_argument('--output_path', type=str, required=True, help='Path to the output file')
-
+    parser.add_argument('--working_directory', type=str, required=True, help='Path to the work directory')
+    parser.add_argument('--documents_path', type=str, help='Path to the document directory that contains corpus txt files')
+    parser.add_argument('--query_input_path', type=str, help='Path to the input txt file that contains the question')
+    parser.add_argument('--query_output_path', type=str, help='Path to the output file tht outputs the answer')
+    
     # Parse the arguments
     args = parser.parse_args()
-
+    
+    WORKING_DIR = args.working_directory
+    
     print(f'args.run_insert={args.run_insert}')
     if args.run_insert:
         insert(args.documents_path)
@@ -174,7 +178,7 @@ if __name__ == "__main__":
     print(f'args.run_query={args.run_query}')
     if args.run_query:
         # Open the file in read mode and read its contents into a string
-        with open(args.input_path, "r") as file:
+        with open(args.query_input_path, "r") as file:
             QUERY_QUESTION = file.read()  # Read the entire file as a single string
         
         print(f'QUERY_QUESTION read from file: {QUERY_QUESTION}')
