@@ -4,7 +4,7 @@ import argparse
 # local agents folder
 from retrieval_strategy_agent import RetrievalStrategyAgent
 from generation_agent import GenerationAgent
-from feedback_agent import FeedBackAgent
+from feedback_agent import FeedbackAgent
 from refinement_agent import RefinementAgent
 from scoring_agent import ScoringAgent
 
@@ -77,11 +77,11 @@ def run_orchestrator_agent(work_directory_path: str, query_input_path: str, quer
     :return: OrchestratorAgentResponse containing the results.
     """
 
-    retrieval_strategy_agent: RetrievalStrategyAgent = RetrievalStrategyAgent(llm_base_url="", llm_api_secret="")
-    generation_agent: GenerationAgent = GenerationAgent(llm_base_url="", llm_api_secret="")
-    feedback_agent: FeedBackAgent = FeedBackAgent(llm_base_url="", llm_api_secret="")
-    refinement_agent: RefinementAgent = RefinementAgent(llm_base_url="", llm_api_secret="")
-    scoring_agent: ScoringAgent = ScoringAgent(llm_base_url="", llm_api_secret="")
+    retrieval_strategy_agent: RetrievalStrategyAgent = RetrievalStrategyAgent(llm_base_url="", llm_api_key="")
+    generation_agent: GenerationAgent = GenerationAgent(llm_base_url="", llm_api_key="")
+    feedback_agent: FeedbackAgent = FeedbackAgent(llm_base_url="", llm_api_key="")
+    refinement_agent: RefinementAgent = RefinementAgent(llm_base_url="", llm_api_key="")
+    scoring_agent: ScoringAgent = ScoringAgent(llm_base_url="", llm_api_key="")
 
     # Open the query txt file and read its contents into a string
     with open(query_input_path, 'r') as file:
@@ -90,6 +90,7 @@ def run_orchestrator_agent(work_directory_path: str, query_input_path: str, quer
     orchestrator_agent_response: OrchestratorAgentResponse = OrchestratorAgentResponse(query_input)
     retrieval_strategy = retrieval_strategy_agent.run(query_input)
     iteration_cnt = 0
+    max_score = None
 
     while (max_score is None or max_score < score_threshold) and iteration_cnt < iteration_threshold:
         iteration_cnt += 1
@@ -99,7 +100,7 @@ def run_orchestrator_agent(work_directory_path: str, query_input_path: str, quer
         refined_query_response: str = refinement_agent.run(work_directory_path, query_input, initial_query_response, feedback_response)
         score: float = scoring_agent.run(work_directory_path, query_input, refined_query_response)
 
-        if score >= orchestrator_agent_response.get_best_response().get_score():
+        if orchestrator_agent_response.get_total_iteration_cnt() == 0 or score >= orchestrator_agent_response.get_best_response().get_score():
             max_score = score
 
         new_response = RAGQueryResponse(query_input, refined_query_response, score, iteration_cnt)
