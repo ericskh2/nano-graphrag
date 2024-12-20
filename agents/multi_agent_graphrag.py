@@ -2,12 +2,16 @@ from typing import List
 import argparse
 
 # local agents folder
-from query_agent import run_query_agent  # Import the function
+from retrieval_strategy_agent import RetrievalStrategyAgent
+from generation_agent import GenerationAgent
+from feedback_agent import FeedBackAgent
+from refinement_agent import RefinementAgent
+from scoring_agent import ScoringAgent
 
 class RAGQueryResponse:
     def __init__(self, query: str, response: str, score: float, iteration_cnt: int):
         """
-        Represents a response from a Retrieval-Augmented Generation (RAG) query.
+        Represents a single response from a Retrieval-Augmented Generation (RAG) query.
 
         :param query: The original query string.
         :param response: The generated response to the query.
@@ -19,12 +23,28 @@ class RAGQueryResponse:
         self.score = score
         self.iteration_cnt = iteration_cnt
 
-class OrchestratorAgentResponse:
-    def __init__(self, query_input: str, response_list: List[RAGQueryResponse], total_iteration_cnt: int):
-        self.query_input = query_input
-        self.response_list = response_list
-        self.total_iteration_cnt = total_iteration_cnt
+    def get_score(self):
+        """
+        Return the score of the response
+
+        :return: score of response
+        """
+
+        return self.score
     
+class OrchestratorAgentResponse:
+    """
+    An object containing all responses from a Retrieval-Augmented Generation (RAG) query.
+    """
+
+    def __init__(self, query_input: str):
+        self.query_input = query_input
+        self.response_list = []
+        self.total_iteration_cnt = 0
+    
+    def add_response(self, response: RAGQueryResponse):
+        self.response_list.append(response)
+
     def get_best_response(self) -> RAGQueryResponse:
         """
         Return the RAGQueryResponse with the highest score.
@@ -39,11 +59,12 @@ class OrchestratorAgentResponse:
     
     def get_total_iteration_cnt(self) -> int:
         """
-        Return the total number of iterations performed.
+        Return the total number of iterations performed. (length of the response list)
         
         :return: The total iteration count.
         """
-        return self.total_iteration_cnt
+
+        return len(self.response_list)
 
 def run_orchestrator_agent(work_directory_path: str, query_input_path: str, query_output_path: str, score_threshold: float = 4, iteration_threshold: int = 3) -> OrchestratorAgentResponse:
     """
@@ -56,18 +77,36 @@ def run_orchestrator_agent(work_directory_path: str, query_input_path: str, quer
     :return: OrchestratorAgentResponse containing the results.
     """
 
+    retrieval_strategy_agent: RetrievalStrategyAgent = RetrievalStrategyAgent(llm_base_url="", llm_api_secret="")
+    generation_agent: GenerationAgent = GenerationAgent(llm_base_url="", llm_api_secret="")
+    feedback_agent: FeedBackAgent = FeedBackAgent(llm_base_url="", llm_api_secret="")
+    refinement_agent: RefinementAgent = RefinementAgent(llm_base_url="", llm_api_secret="")
+    scoring_agent: ScoringAgent = ScoringAgent(llm_base_url="", llm_api_secret="")
+
     # Open the query txt file and read its contents into a string
     with open(query_input_path, 'r') as file:
-        query_input_str = file.read()
+        query_input = file.read()
 
-    max_score = None
+    orchestrator_agent_response: OrchestratorAgentResponse = OrchestratorAgentResponse(query_input)
+    retrieval_strategy = retrieval_strategy_agent.run(query_input)
     iteration_cnt = 0
 
     while (max_score is None or max_score < score_threshold) and iteration_cnt < iteration_threshold:
-        query_response: str = run_query_agent(work_directory_path, query_input_str)  # Query the agent for a response
         iteration_cnt += 1
-    
-    return 
+
+        initial_query_response: str = generation_agent.run(work_directory_path, retrieval_strategy, query_input)
+        feedback_response: str = feedback_agent.run(work_directory_path, query_input, initial_query_response)
+        refined_query_response: str = refinement_agent.run(work_directory_path, query_input, initial_query_response, feedback_response)
+        score: float = scoring_agent.run(work_directory_path, query_input, refined_query_response)
+
+        if score >= orchestrator_agent_response.get_best_response().get_score():
+            max_score = score
+
+        new_response = RAGQueryResponse(query_input, refined_query_response, score, iteration_cnt)
+
+        orchestrator_agent_response.add_response(new_response)
+
+    return orchestrator_agent_response
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="A script that accepts command-line arguments.")
