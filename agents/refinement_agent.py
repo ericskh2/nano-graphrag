@@ -31,10 +31,11 @@ class RefinementAgent:
         Returns:
             str: Refined query response.
         """
-        print(f"Working directory: {work_directory_path}")
-        print(f"Query input: {query_input}")
-        print(f"Initial query response: {initial_query_response}")
-        print(f"Feedback response: {feedback_response}")
+        # print(f"Working directory: {work_directory_path}")
+        # print(f"Query input: {query_input}")
+        # print(f"Initial query response: {initial_query_response}")
+        # print(f"Feedback response: {feedback_response}")
+        print("Running RefinementAgent")
 
         # Simulate refinement process
         refined_query_response = f"Refined response for '{query_input}' with feedback applied."

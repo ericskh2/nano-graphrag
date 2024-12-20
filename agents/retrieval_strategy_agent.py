@@ -24,4 +24,6 @@ class RetrievalStrategyAgent:
             str: The mode determined by the LLM (global/local/naive).
         """
 
+        print('Running retrieval strategy agent')
+
         return "global"

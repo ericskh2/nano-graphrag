@@ -30,9 +30,8 @@ class ScoringAgent:
         Returns:
             float: The score for the refined response.
         """
-        print(f"Working directory: {work_directory_path}")
-        print(f"Query input: {query_input}")
-        print(f"Refined query response: {refined_query_response}")
+
+        print('Running scoring agent')
 
         # Simulate scoring process
         score = 9.5  # Placeholder score

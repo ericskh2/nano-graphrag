@@ -30,9 +30,10 @@ class FeedbackAgent:
         Returns:
             str: Feedback for the initial response.
         """
-        print(f"Working directory: {work_directory_path}")
-        print(f"Query input: {query_input}")
-        print(f"Initial query response: {initial_query_response}")
+        # print(f"Working directory: {work_directory_path}")
+        # print(f"Query input: {query_input}")
+        # print(f"Initial query response: {initial_query_response}")
+        print('Running feedback agent')
 
         # Simulate feedback generation
         feedback_response = f"Feedback: Improve clarity for the query '{query_input}'."

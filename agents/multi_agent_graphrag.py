@@ -141,4 +141,4 @@ if __name__ == "__main__":
     query_input_path = args.query_input_path
     query_output_path = args.query_output_path
 
-    run_orchestrator_agent(work_directory_path=work_directory_path, query_input_path=query_input_path, query_output_path=query_output_path, score_threshold=4, iteration_threshold=3)
+    run_orchestrator_agent(work_directory_path=work_directory_path, query_input_path=query_input_path, query_output_path=query_output_path, score_threshold=100, iteration_threshold=3)

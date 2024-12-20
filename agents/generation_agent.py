@@ -31,6 +31,8 @@ class GenerationAgent:
             str: The generated response.
         """
 
+        print('Running generation agent')
+        
         generated_response = ""
         
         return generated_response
