@@ -21,6 +21,7 @@ class RetrievalStrategyAgent:
         pass
 
 
+    """mode: Literal["local", "global", "naive"]"""
     def run(self, query_input: str) -> str:
         """
         Executes the retrieval strategy agent by sending a query to the LLM.
