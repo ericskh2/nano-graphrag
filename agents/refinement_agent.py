@@ -33,7 +33,7 @@ class RefinementAgentMistral:
         llm_api_key (str): The API key for authenticating with the LLM API.
     """
     
-    def __post_init__(self, llm_base_url: str, llm_api_key: str, llm_model_name: str = "mistral-large-latest", embedding_model_name: str = "nomic-embed-text:ctx32k", embedding_model_dim: int = 768, embedding_model_max_tokens: int = 32000):
+    def __init__(self, llm_base_url: str, llm_api_key: str, llm_model_name: str = "mistral-large-2407", embedding_model_name: str = "nomic-embed-text:ctx32k", embedding_model_dim: int = 768, embedding_model_max_tokens: int = 32000):
         """
         Initializes the RefinementAgent with the provided LLM base URL and API key.
         """
@@ -157,7 +157,7 @@ class RefinementAgent:
         llm_api_key (str): The API key for authenticating with the LLM API.
     """
     
-    def __post_init__(self, llm_base_url: str, llm_api_key: str, llm_model_name: str, embedding_model_name: str = "nomic-embed-text:ctx32k", embedding_model_dim: int = 768, embedding_model_max_tokens: int = 32000):
+    def __init__(self, llm_base_url: str, llm_api_key: str, llm_model_name: str, embedding_model_name: str = "nomic-embed-text:ctx32k", embedding_model_dim: int = 768, embedding_model_max_tokens: int = 32000):
         """
         Initializes the RefinementAgent with the provided LLM base URL and API key.
         """
@@ -233,7 +233,7 @@ class RefinementAgent:
             working_dir=work_directory_path,
             best_model_func=self.llm_model_if_cache,
             cheap_model_func=self.llm_model_if_cache,
-            embedding_func=self.embedding_model,
+            embedding_func=self.embedding_model(),
         )
         query_question = f"""
                     This is the query input: "{query_input}".
