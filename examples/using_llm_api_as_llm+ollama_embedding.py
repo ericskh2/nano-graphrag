@@ -133,8 +133,28 @@ def insert(documents_directory_path):
             print(f'using_llm_api_as_llm+ollama_embedding.py: Inserting document {filename}')
             # Read the contents of the file
             file_contents = file.read()
-            rag.insert(file_contents)
+
+            # rag.insert(file_contents)
             # file_contents_list.append(file_contents)
+
+            # Insert the content in chunks
+            def insert_in_chunks(content, insert_function, max_chunk_size):
+                """
+                Inserts content into the graph function in chunks of at most max_chunk_size.
+
+                Args:
+                    content (str): The content to be inserted.
+                    insert_function (callable): The function to call for inserting chunks.
+                    max_chunk_size: Maximum limit of the size of a chunk
+                """
+                start = 0
+                while start < len(content):
+                    end = min(start + max_chunk_size, len(content))
+                    print(f'using_llm_api_as_llm+ollama_embedding.py: Inserting document {filename} (start:{start}, end:{end})')
+                    insert_function(content[start:end])
+                    start = end
+
+            insert_in_chunks(file_contents, rag.insert, 2000 * 1024)
 
     print("indexing time:", time() - start)
     # rag = GraphRAG(working_dir=WORKING_DIR, enable_llm_cache=True)
