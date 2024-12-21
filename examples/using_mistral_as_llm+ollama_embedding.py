@@ -12,7 +12,6 @@ import os
 import argparse
 
 import time
-
 timestr = time.strftime("%Y%m%d-%H%M%S")
 
 logging.basicConfig(level=logging.WARNING)
@@ -23,21 +22,27 @@ logging.getLogger("nano-graphrag").setLevel(logging.INFO)
 # QUERY_QUESTION = "How does Bitcoin enhance the privacy level of transactions when compared to the traditional banking model?​"
 QUERY_QUESTION = None
 
+# Path setup
+# web3_text_path = "/research/d2/msc/khsew24/cryptoKGTutorial/txtWhitePapers/*.txt"
+
 # Assumed llm model settings
 LLM_BASE_URL = os.getenv("LLM_BASE_URL")
 LLM_API_KEY = os.getenv("LLM_API_KEY")
-
-MODEL = "mistral-large-2407"
+MODEL = os.getenv("LLM_MODEL")
+# MODEL = "mistral-large-2407"
 
 # Assumed embedding model settings
-EMBEDDING_MODEL = "nomic-embed-text"
+EMBEDDING_MODEL = "nomic-embed-text:ctx32k"
 EMBEDDING_MODEL_DIM = 768
-EMBEDDING_MODEL_MAX_TOKENS = 8192
+EMBEDDING_MODEL_MAX_TOKENS = 32000
 
-WORKING_DIR = "./nano_graphrag_cache_mistral_" + timestr
+SYSTEM_PROMPT_TEMPLATE = "You are an intelligent assistant and will follow the instructions given to you to fulfill the goal. The answer should be in the format as in the given example."
+
+WORKING_DIR = None
+# WORKING_DIR = "./nano_graphrag_cache_mistral_web320241219-202816"
 
 async def llm_model_if_cache(
-    prompt, system_prompt=None, history_messages=[], **kwargs
+    prompt, system_prompt=SYSTEM_PROMPT_TEMPLATE, history_messages=[], **kwargs
 ) -> str:
     client = Mistral(api_key=LLM_API_KEY)
     messages = []
@@ -73,6 +78,9 @@ def remove_if_exist(file):
         os.remove(file)
 
 
+
+
+
 def query():
     rag = GraphRAG(
         working_dir=WORKING_DIR,
@@ -97,11 +105,11 @@ def insert(documents_directory_path):
     # with open("./tests/mock_data.txt", encoding="utf-8-sig") as f:
     #     FAKE_TEXT = f.read()
 
-    remove_if_exist(f"{WORKING_DIR}/vdb_entities.json")
-    remove_if_exist(f"{WORKING_DIR}/kv_store_full_docs.json")
-    remove_if_exist(f"{WORKING_DIR}/kv_store_text_chunks.json")
-    remove_if_exist(f"{WORKING_DIR}/kv_store_community_reports.json")
-    remove_if_exist(f"{WORKING_DIR}/graph_chunk_entity_relation.graphml")
+    # remove_if_exist(f"{WORKING_DIR}/vdb_entities.json")
+    # remove_if_exist(f"{WORKING_DIR}/kv_store_full_docs.json")
+    # remove_if_exist(f"{WORKING_DIR}/kv_store_text_chunks.json")
+    # remove_if_exist(f"{WORKING_DIR}/kv_store_community_reports.json")
+    # remove_if_exist(f"{WORKING_DIR}/graph_chunk_entity_relation.graphml")
 
     rag = GraphRAG(
         working_dir=WORKING_DIR,
@@ -122,12 +130,12 @@ def insert(documents_directory_path):
     # rag = GraphRAG(working_dir=WORKING_DIR, enable_llm_cache=True)
     # rag.insert(FAKE_TEXT[half_len:])
 
-
 # We're using Ollama to generate embeddings for the BGE model
 @wrap_embedding_func_with_attrs(
     embedding_dim= EMBEDDING_MODEL_DIM,
     max_token_size= EMBEDDING_MODEL_MAX_TOKENS,
 )
+
 async def ollama_embedding(texts :list[str]) -> np.ndarray:
     embed_text = []
     for text in texts:
@@ -136,7 +144,6 @@ async def ollama_embedding(texts :list[str]) -> np.ndarray:
     
     return embed_text
 
-
 if __name__ == "__main__":
     # Create the parser
     parser = argparse.ArgumentParser(description="Script to process files with input and output paths.")
@@ -144,13 +151,16 @@ if __name__ == "__main__":
     # Add input and output arguments
     parser.add_argument('--run_insert', action='store_true', help='Whether to run insert() again')
     parser.add_argument('--run_query', action='store_true', help='Whether to run query()')
-    parser.add_argument('--documents_path', type=str, required=True, help='Path to the document directory')
-    parser.add_argument('--input_path', type=str, required=True, help='Path to the input file')
-    parser.add_argument('--output_path', type=str, required=True, help='Path to the output file')
-
+    parser.add_argument('--working_directory', type=str, required=True, help='Path to the work directory')
+    parser.add_argument('--documents_path', type=str, help='Path to the document directory that contains corpus txt files')
+    parser.add_argument('--query_input_path', type=str, help='Path to the input txt file that contains the question')
+    parser.add_argument('--query_output_path', type=str, help='Path to the output file tht outputs the answer')
+    
     # Parse the arguments
     args = parser.parse_args()
-
+    
+    WORKING_DIR = args.working_directory
+    
     print(f'args.run_insert={args.run_insert}')
     if args.run_insert:
         insert(args.documents_path)
@@ -158,7 +168,7 @@ if __name__ == "__main__":
     print(f'args.run_query={args.run_query}')
     if args.run_query:
         # Open the file in read mode and read its contents into a string
-        with open(args.input_path, "r") as file:
+        with open(args.query_input_path, "r") as file:
             QUERY_QUESTION = file.read()  # Read the entire file as a single string
         
         print(f'QUERY_QUESTION read from file: {QUERY_QUESTION}')

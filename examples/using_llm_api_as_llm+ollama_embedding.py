@@ -25,7 +25,8 @@ QUERY_QUESTION = None
 # Assumed llm model settings
 LLM_BASE_URL = os.getenv("LLM_BASE_URL")
 LLM_API_KEY = os.getenv("LLM_API_KEY")
-MODEL = "deepseek-chat"
+MODEL = os.getenv("LLM_MODEL")
+# MODEL = "deepseek-chat"
 
 # Assumed embedding model settings
 EMBEDDING_MODEL = "nomic-embed-text:ctx32k"
