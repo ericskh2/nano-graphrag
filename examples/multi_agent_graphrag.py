@@ -197,34 +197,48 @@ if __name__ == "__main__":
     retrieval_strategy = query_retrieval_strategy(QUERY_QUESTION)
     print("retrieval_strategy", retrieval_strategy)
 
-    generated_response = query_graphrag(QUERY_QUESTION,retrieval_strategy)
-    print("generated_response", generated_response)
+    score_threshold: float = 4.0
+    iteration_threshold: int = 3
+    max_score: float = 0.0
+    iteration_cnt: int = 0
+    best_response = None
+    while max_score < score_threshold and iteration_cnt < iteration_threshold:
+        iteration_cnt += 1
 
-    FeedBack_Prompt = f"""
-        Here is the question: "{QUERY_QUESTION}".
-        Here is the answer: "{generated_response}".
-        Please give your feedback on the answer and give the advantages and disadvantages of the answer"
-    """
-    feedback = query_graphrag(FeedBack_Prompt, retrieval_strategy)
-    print("feedback", feedback)
+        generated_response = query_graphrag(QUERY_QUESTION,retrieval_strategy)
+        print("generated_response", generated_response)
 
-    Refinement_Prompt = f"""
-       Here is the question: "{QUERY_QUESTION}".
-       This is the initial response: "{generated_response}".
-       This is the feedback of the initial response: "{feedback}".
-       Please refine the response of the question based on the feedback by highlighting the advantages and addressing the disadvantages mentioned.
-    """
-    refined_response = query_graphrag(Refinement_Prompt, retrieval_strategy)
-    print("refined_response", refined_response)
+        FeedBack_Prompt = f"""
+            Here is the question: "{QUERY_QUESTION}".
+            Here is the answer: "{generated_response}".
+            Please give your feedback on the answer and give the advantages and disadvantages of the answer"
+        """
+        feedback = query_graphrag(FeedBack_Prompt, retrieval_strategy)
+        print("feedback", feedback)
 
-    Scoring_Prompt = f"""
-        Here is the question: "{QUERY_QUESTION}".
-        Here is the refined answer: "{refined_response}".
-        Please give a score only from 1-5(type: float) about whether the refined response is satisfactory. Please just give the score only and you must score fairly without worrying about appearances and I am able to tolerate low scores.
-    """
-    score = query_graphrag(Scoring_Prompt, retrieval_strategy)
-    print("score", score)
+        Refinement_Prompt = f"""
+           Here is the question: "{QUERY_QUESTION}".
+           This is the initial response: "{generated_response}".
+           This is the feedback of the initial response: "{feedback}".
+           Please refine the response of the question based on the feedback by highlighting the advantages and addressing the disadvantages mentioned.
+        """
+        refined_response = query_graphrag(Refinement_Prompt, retrieval_strategy)
+        print("refined_response", refined_response)
 
+        Scoring_Prompt = f"""
+            Here is the question: "{QUERY_QUESTION}".
+            Here is the refined answer: "{refined_response}".
+            Please give a score only from 1-5(type: float) about whether the refined response is satisfactory. Please just give the score only and you must score fairly without worrying about appearances and I am able to tolerate low scores.
+        """
+        score = query_graphrag(Scoring_Prompt, retrieval_strategy)
+        print("score", score)
+
+        if score > max_score:
+            max_score = score
+            best_response = refined_response
+
+    print("best_response", best_response)
+    print("best_score", max_score)
 
 
 

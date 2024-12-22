@@ -2,7 +2,7 @@ from typing import List
 import argparse
 import os
 
-# local agents folder
+# local agents_dir folder
 from retrieval_strategy_agent import RetrievalStrategyAgent, RetrievalStrategyAgentMistral
 from generation_agent import GenerationAgent, GenerationAgentMistral
 from feedback_agent import FeedbackAgent, FeedbackAgentMistral
