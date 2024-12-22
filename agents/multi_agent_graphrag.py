@@ -121,6 +121,7 @@ def run_orchestrator_agent(work_directory_path: str, query_input_path: str, quer
 
     orchestrator_agent_response: OrchestratorAgentResponse = OrchestratorAgentResponse(query_input)
     retrieval_strategy = retrieval_strategy_agent.run(query_input)
+    print(retrieval_strategy)
     iteration_cnt = 0
     max_score = None
 
@@ -173,15 +174,15 @@ def run_orchestrator_agent_alt(work_directory_path: str, query_input_path: str, 
             print("Model set to Deepseek-chat")
 
     if mistral:
-        generation_agent: GenerationAgent = GenerationAgentMistral(llm_base_url="", llm_api_key="")
-        feedback_agent: FeedbackAgent = FeedbackAgentMistral(llm_base_url="", llm_api_key="")
-        refinement_agent: RefinementAgent = RefinementAgentMistral(llm_base_url="", llm_api_key="")
-        scoring_agent: ScoringAgent = ScoringAgentMistral(llm_base_url="", llm_api_key="")
+        generation_agent: GenerationAgent = GenerationAgentMistral(llm_base_url, llm_api_key)
+        feedback_agent: FeedbackAgent = FeedbackAgentMistral(llm_base_url, llm_api_key)
+        refinement_agent: RefinementAgent = RefinementAgentMistral(llm_base_url, llm_api_key)
+        scoring_agent: ScoringAgent = ScoringAgentMistral(llm_base_url, llm_api_key)
     else:
-        generation_agent: GenerationAgent = GenerationAgent(llm_base_url="", llm_api_key="")
-        feedback_agent: FeedbackAgent = FeedbackAgent(llm_base_url="", llm_api_key="")
-        refinement_agent: RefinementAgent = RefinementAgent(llm_base_url="", llm_api_key="")
-        scoring_agent: ScoringAgent = ScoringAgent(llm_base_url="", llm_api_key="")
+        generation_agent: GenerationAgent = GenerationAgent(llm_base_url, llm_api_key)
+        feedback_agent: FeedbackAgent = FeedbackAgent(llm_base_url, llm_api_key)
+        refinement_agent: RefinementAgent = RefinementAgent(llm_base_url, llm_api_key)
+        scoring_agent: ScoringAgent = ScoringAgent(llm_base_url, llm_api_key)
 
     # Open the query txt file and read its contents into a string
     with open(query_input_path, 'r') as file:

@@ -22,7 +22,7 @@ class ScoringAgentMistral:
 
     system_prompt: str = field(
         default="""
-                    You are an intelligent assistant responsible for giving a score from 1-5(type: float) about whether the current response is satisfactory based on retrieved content or inserted corpus. So you will get a query input and a current response. Please just give the score only and you must score fairly without worrying about appearances and I am able to tolerate low scores.
+                    You are an intelligent assistant responsible for giving a score from 1-5(type: float) about whether the current response is satisfactory based on retrieved content or inserted corpus. So you will get a query input and a current response. Please just give the score only and you must score fairly without worrying about appearances and I am able to tolerate low scores. Ensure the output is in JSON format.
                 """,
         init=False,
     )
@@ -34,7 +34,7 @@ class ScoringAgentMistral:
 
     def __init__(self, llm_base_url: str, llm_api_key: str, llm_model_name: str = "mistral-large-2407", embedding_model_name: str = "nomic-embed-text:ctx32k", embedding_model_dim: int = 768, embedding_model_max_tokens: int = 32000):
         """
-        Initializes the ScoringAgent with the provided LLM base URL and API key.
+        Initializes the ScoringAgent with the provided LLM base URL and API key. 
         """
         self.llm_base_url = llm_base_url
         self.llm_api_key = llm_api_key
@@ -60,33 +60,33 @@ class ScoringAgentMistral:
         messages.append({"role": "system", "content": self.system_prompt})
 
         # Get the cached response if having-------------------
-        hashing_kv: BaseKVStorage = kwargs.pop("hashing_kv", None)
+        # hashing_kv: BaseKVStorage = kwargs.pop("hashing_kv", None)
         messages.extend(history_messages)
         messages.append({"role": "user", "content": prompt})
-        if hashing_kv is not None:
-            args_hash = compute_args_hash(self.llm_model_name, messages)
-            if_cache_return = await hashing_kv.get_by_id(args_hash)
-            if if_cache_return is not None:
-                return if_cache_return["return"]
+        # if hashing_kv is not None:
+        #     args_hash = compute_args_hash(self.llm_model_name, messages)
+        #     if_cache_return = await hashing_kv.get_by_id(args_hash)
+        #     if if_cache_return is not None:
+        #         return if_cache_return["return"]
         # -----------------------------------------------------
-
+        settings = {'response_format': {'type': 'json_object'}}
         response = client.chat.complete(
-            model=self.llm_model_name, messages=messages, **kwargs
+            model=self.llm_model_name, messages=messages, **settings
         )
 
         # Cache the response if having-------------------
-        if hashing_kv is not None:
-            await hashing_kv.upsert(
-                {args_hash: {"return": response.choices[0].message.content, "model": self.llm_model_name}}
-            )
+        # if hashing_kv is not None:
+        #     await hashing_kv.upsert(
+        #         {args_hash: {"return": response.choices[0].message.content, "model": self.llm_model_name}}
+        #     )
         # -----------------------------------------------------
         return response.choices[0].message.content
 
     def embedding_model(self):
-        @wrap_embedding_func_with_attrs(
-            embedding_dim=self.embedding_model_dim,
-            max_token_size=self.embedding_model_max_tokens,
-        )
+        # @wrap_embedding_func_with_attrs(
+        #     embedding_dim=self.embedding_model_dim,
+        #     max_token_size=self.embedding_model_max_tokens,
+        # )
         async def ollama_embedding(texts: list[str]) -> np.ndarray:
             embed_text = []
             for text in texts:
@@ -109,11 +109,14 @@ class ScoringAgentMistral:
         Returns:
             float: The score for the refined response.
         """
+        ollama_embedding = self.embedding_model()
+        ollama_embedding.embedding_dim=self.embedding_model_dim
+        ollama_embedding.max_token_size=self.embedding_model_max_tokens
         rag = GraphRAG(
             working_dir=work_directory_path,
             best_model_func=self.llm_model_if_cache,
             cheap_model_func=self.llm_model_if_cache,
-            embedding_func=self.embedding_model,
+            embedding_func=ollama_embedding
         )
         query_question = f"""
                             This is the query input: "{query_input}".
@@ -176,14 +179,14 @@ class ScoringAgent:
         messages.append({"role": "system", "content": self.system_prompt})
 
         # Get the cached response if having-------------------
-        hashing_kv: BaseKVStorage = kwargs.pop("hashing_kv", None)
+        # hashing_kv: BaseKVStorage = kwargs.pop("hashing_kv", None)
         messages.extend(history_messages)
         messages.append({"role": "user", "content": prompt})
-        if hashing_kv is not None:
-            args_hash = compute_args_hash(self.llm_model_name, messages)
-            if_cache_return = await hashing_kv.get_by_id(args_hash)
-            if if_cache_return is not None:
-                return if_cache_return["return"]
+        # if hashing_kv is not None:
+        #     args_hash = compute_args_hash(self.llm_model_name, messages)
+        #     if_cache_return = await hashing_kv.get_by_id(args_hash)
+        #     if if_cache_return is not None:
+        #         return if_cache_return["return"]
         # -----------------------------------------------------
 
         response = await client.chat.completions.create(
@@ -191,18 +194,18 @@ class ScoringAgent:
         )
 
         # Cache the response if having-------------------
-        if hashing_kv is not None:
-            await hashing_kv.upsert(
-                {args_hash: {"return": response.choices[0].message.content, "model": self.llm_model_name}}
-            )
+        # if hashing_kv is not None:
+        #     await hashing_kv.upsert(
+        #         {args_hash: {"return": response.choices[0].message.content, "model": self.llm_model_name}}
+        #     )
         # -----------------------------------------------------
         return response.choices[0].message.content
 
     def embedding_model(self):
-        @wrap_embedding_func_with_attrs(
-            embedding_dim=self.embedding_model_dim,
-            max_token_size=self.embedding_model_max_tokens,
-        )
+        # @wrap_embedding_func_with_attrs(
+        #     embedding_dim=self.embedding_model_dim,
+        #     max_token_size=self.embedding_model_max_tokens,
+        # )
         async def ollama_embedding(texts: list[str]) -> np.ndarray:
             embed_text = []
             for text in texts:
@@ -225,11 +228,14 @@ class ScoringAgent:
         Returns:
             float: The score for the refined response.
         """
+        ollama_embedding = self.embedding_model()
+        ollama_embedding.embedding_dim=self.embedding_model_dim
+        ollama_embedding.max_token_size=self.embedding_model_max_tokens
         rag = GraphRAG(
             working_dir=work_directory_path,
             best_model_func=self.llm_model_if_cache,
             cheap_model_func=self.llm_model_if_cache,
-            embedding_func=self.embedding_model,
+            embedding_func=ollama_embedding
         )
         query_question = f"""
                             This is the query input: "{query_input}".

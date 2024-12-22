@@ -23,7 +23,7 @@ class RefinementAgentMistral:
 
     system_prompt: str = field(
         default="""
-            You are an intelligent assistant responsible for refining the response based on the feedback so you will get a query input, the initial response(with advantages and disadvantages) and the feedback of the initial response. Please refine the response based on the retrieved content and the feedback by highlighting the advantages and addressing the disadvantages mentioned.
+            You are an intelligent assistant responsible for refining the response based on the feedback so you will get a query input, the initial response(with advantages and disadvantages) and the feedback of the initial response. Please refine the response based on the retrieved content and the feedback by highlighting the advantages and addressing the disadvantages mentioned. Ensure the output is in JSON format.
         """,
         init=False,
     )
@@ -61,33 +61,34 @@ class RefinementAgentMistral:
         messages.append({"role": "system", "content": self.system_prompt})
 
         # Get the cached response if having-------------------
-        hashing_kv: BaseKVStorage = kwargs.pop("hashing_kv", None)
+        # hashing_kv: BaseKVStorage = kwargs.pop("hashing_kv", None)
         messages.extend(history_messages)
         messages.append({"role": "user", "content": prompt})
-        if hashing_kv is not None:
-            args_hash = compute_args_hash(self.llm_model_name, messages)
-            if_cache_return = await hashing_kv.get_by_id(args_hash)
-            if if_cache_return is not None:
-                return if_cache_return["return"]
+        # if hashing_kv is not None:
+        #     args_hash = compute_args_hash(self.llm_model_name, messages)
+        #     if_cache_return = await hashing_kv.get_by_id(args_hash)
+        #     if if_cache_return is not None:
+        #         return if_cache_return["return"]
         # -----------------------------------------------------
 
+        settings = {'response_format': {'type': 'json_object'}}
         response = client.chat.complete(
-            model=self.llm_model_name, messages=messages, **kwargs
+            model=self.llm_model_name, messages=messages, **settings
         )
 
         # Cache the response if having-------------------
-        if hashing_kv is not None:
-            await hashing_kv.upsert(
-                {args_hash: {"return": response.choices[0].message.content, "model": self.llm_model_name}}
-            )
+        # if hashing_kv is not None:
+        #     await hashing_kv.upsert(
+        #         {args_hash: {"return": response.choices[0].message.content, "model": self.llm_model_name}}
+        #     )
         # -----------------------------------------------------
         return response.choices[0].message.content
 
     def embedding_model(self):
-        @wrap_embedding_func_with_attrs(
-            embedding_dim=self.embedding_model_dim,
-            max_token_size=self.embedding_model_max_tokens,
-        )
+        # @wrap_embedding_func_with_attrs(
+        #     embedding_dim=self.embedding_model_dim,
+        #     max_token_size=self.embedding_model_max_tokens,
+        # )
         async def ollama_embedding(texts: list[str]) -> np.ndarray:
             embed_text = []
             for text in texts:
@@ -111,11 +112,14 @@ class RefinementAgentMistral:
         Returns:
             str: Refined query response.
         """
+        ollama_embedding = self.embedding_model()
+        ollama_embedding.embedding_dim=self.embedding_model_dim
+        ollama_embedding.max_token_size=self.embedding_model_max_tokens
         rag = GraphRAG(
             working_dir=work_directory_path,
             best_model_func=self.llm_model_if_cache,
             cheap_model_func=self.llm_model_if_cache,
-            embedding_func=self.embedding_model,
+            embedding_func=ollama_embedding
         )
         query_question = f"""
                     This is the query input: "{query_input}".
@@ -179,14 +183,14 @@ class RefinementAgent:
         messages.append({"role": "system", "content": self.system_prompt})
 
         # Get the cached response if having-------------------
-        hashing_kv: BaseKVStorage = kwargs.pop("hashing_kv", None)
+        # hashing_kv: BaseKVStorage = kwargs.pop("hashing_kv", None)
         messages.extend(history_messages)
         messages.append({"role": "user", "content": prompt})
-        if hashing_kv is not None:
-            args_hash = compute_args_hash(self.llm_model_name, messages)
-            if_cache_return = await hashing_kv.get_by_id(args_hash)
-            if if_cache_return is not None:
-                return if_cache_return["return"]
+        # if hashing_kv is not None:
+        #     args_hash = compute_args_hash(self.llm_model_name, messages)
+        #     if_cache_return = await hashing_kv.get_by_id(args_hash)
+        #     if if_cache_return is not None:
+        #         return if_cache_return["return"]
         # -----------------------------------------------------
 
         response = await client.chat.completions.create(
@@ -194,10 +198,10 @@ class RefinementAgent:
         )
 
         # Cache the response if having-------------------
-        if hashing_kv is not None:
-            await hashing_kv.upsert(
-                {args_hash: {"return": response.choices[0].message.content, "model": self.llm_model_name}}
-            )
+        # if hashing_kv is not None:
+        #     await hashing_kv.upsert(
+        #         {args_hash: {"return": response.choices[0].message.content, "model": self.llm_model_name}}
+        #     )
         # -----------------------------------------------------
         return response.choices[0].message.content
 
@@ -229,11 +233,14 @@ class RefinementAgent:
         Returns:
             str: Refined query response.
         """
+        ollama_embedding = self.embedding_model()
+        ollama_embedding.embedding_dim=self.embedding_model_dim
+        ollama_embedding.max_token_size=self.embedding_model_max_tokens
         rag = GraphRAG(
             working_dir=work_directory_path,
             best_model_func=self.llm_model_if_cache,
             cheap_model_func=self.llm_model_if_cache,
-            embedding_func=self.embedding_model(),
+            embedding_func=ollama_embedding
         )
         query_question = f"""
                     This is the query input: "{query_input}".
