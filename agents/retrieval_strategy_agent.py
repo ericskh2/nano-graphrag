@@ -18,7 +18,7 @@ class RetrievalStrategyAgentMistral:
         init=False,
     )
 
-    def __init__(self, llm_base_url: str, llm_api_key: str, llm_model_name: str = "mistral-large-2407"):
+    def __init__(self, llm_base_url: str, llm_api_key: str, llm_model_name: str = "mistral-large-latest"):
         """
         Initializes the RetrievalStrategyAgent with the provided LLM base URL and API key.
         """

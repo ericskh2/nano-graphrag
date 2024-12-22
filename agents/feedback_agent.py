@@ -32,7 +32,7 @@ class FeedbackAgentMistral:
         llm_api_key (str): The API key for authenticating with the LLM API.
     """
 
-    def __init__(self, llm_base_url: str, llm_api_key: str, llm_model_name: str = "mistral-large-2407", embedding_model_name: str = "nomic-embed-text:ctx32k", embedding_model_dim: int = 768, embedding_model_max_tokens: int = 32000):
+    def __init__(self, llm_base_url: str, llm_api_key: str, llm_model_name: str = "mistral-large-latest", embedding_model_name: str = "nomic-embed-text:ctx32k", embedding_model_dim: int = 768, embedding_model_max_tokens: int = 32000):
         """
         Initializes the FeedbackAgent with the provided LLM base URL and API key.
         """

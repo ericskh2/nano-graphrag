@@ -90,7 +90,7 @@ def query():
     )
 
     # Open the file in write mode
-    with open(args.output_path, "w") as file:
+    with open(args.query_output_path, "w") as file:
         # Use the print function with the file parameter
         print(
             rag.query(
