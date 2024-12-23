@@ -55,7 +55,7 @@ async def llm_model_mistral_if_cache(
     return response.choices[0].message.content
 
 
-SYSTEM_PROMPT_TEMPLATE = "You are an intelligent assistant and will follow the instructions given to you to fulfill the goal. The answer should be in the format as in the given example. Respond in JSON format."
+SYSTEM_PROMPT_TEMPLATE = "You are an intelligent assistant and will follow the instructions given to you to fulfill the goal. The answer should be in the format as in the given example. You must respond in JSON object."
 async def llm_model_deepseek_if_cache(
         prompt, system_prompt=SYSTEM_PROMPT_TEMPLATE, history_messages=[], **kwargs
 ) -> str:
@@ -171,6 +171,29 @@ def query_retrieval_strategy(QUERY_QUESTION, mistral):
         result = "naive"
     return result
 
+def scoring_alt(QUERY_QUESTION, mistral):
+    if mistral:
+        client = Mistral(api_key=llm_api_key)
+    else:
+        client = AsyncOpenAI(
+            api_key=llm_api_key, base_url=llm_base_url
+        )
+    messages = []
+    system_prompt = "You are an intelligent agent responsible for scoring the response by another agent. Respond in JSON format."
+    messages.append({"role": "system", "content": system_prompt})
+    messages.append({"role": "user", "content": QUERY_QUESTION})
+    if mistral:
+        chat_response = client.chat.complete(
+            model=llm_model,
+            messages=messages
+        )
+    else:
+        chat_response = client.chat.completions.create(
+            model=llm_model, messages=messages
+        )
+    print('Running alternate scoring agent')
+    response: str = chat_response.choices[0].message.content
+    return float(response)
 
 def query_graphrag(QUERY_QUESTION, mode, mistral):
     if mistral:
@@ -301,14 +324,15 @@ if __name__ == '__main__':
         Scoring_Prompt = f"""
                 Here is the question: "{QUERY_QUESTION}".
                 Here is the refined answer: "{refined_response}".
-                Please give a score only from 1-5(type: float) in JSON format about whether the refined response is satisfactory. Please just give the score only and you must score fairly without worrying about appearances and I am able to tolerate low scores.
-                Give a lower score if the answer does not meet the following requirement: 
-                a multiple-choice question should not have any explanations, only the answer letter; 
-                a short question should have a concise answer; 
-                an open-ended question should have a detailed answer.
+                Give a lower score if the answer does not meet the following requirement: a multiple-choice question should not have any explanations, only the answer letter; a short question should have a concise answer; an open-ended question should have a detailed answer.
+                Please return a score only from 1-5 (type: float) about whether the refined response is satisfactory. You must score fairly and I am able to tolerate low scores. Only a single floating point number is allowed in the response.
             """
-        score = query_graphrag(Scoring_Prompt, retrieval_strategy, args.mistral)
-        score = float(score)
+        try:
+            score = query_graphrag(Scoring_Prompt, retrieval_strategy, args.mistral)
+            score = float(score)
+        except:
+            score = scoring_alt(Scoring_Prompt, args.mistral)
+            score = float(score)
         print("score", score)
 
         if score > max_score:
