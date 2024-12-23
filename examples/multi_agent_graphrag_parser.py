@@ -280,7 +280,9 @@ if __name__ == '__main__':
         FeedBack_Prompt = f"""
                 Here is the question: "{QUERY_QUESTION}".
                 Here is the answer: "{generated_response}".
-                Please give your feedback on the answer and give the advantages and disadvantages of the answer"
+                If the question is open-ended, please give your feedback on the answer and give the advantages and disadvantages of the answer, longer answers are accepted.
+                If the question is multiple-choice type, please verify the answer and give the reasons."
+                If the question is a short question, please give your feedback on the answer and verify its correctness, longer answers are not accepted.
             """
         feedback = query_graphrag(FeedBack_Prompt, retrieval_strategy, args.mistral)
         print("feedback", feedback)
@@ -288,8 +290,10 @@ if __name__ == '__main__':
         Refinement_Prompt = f"""
                Here is the question: "{QUERY_QUESTION}".
                This is the initial response: "{generated_response}".
-               This is the feedback of the initial response: "{feedback}".
-               Please refine the response of the question based on the feedback by highlighting the advantages and addressing the disadvantages mentioned.
+               This is the feedback/verfication of the initial response: "{feedback}".
+               If the question is open-ended, please refine the response of the question based on the feedback by highlighting the advantages and addressing the disadvantages mentioned.
+               If the question is multiple-choice type, please revise the answer based on the feedback and return the correct answer (a single letter only, such as: A, B, C, D or E).
+               If the question is a short question, only return the answer directly based on the feedback.
             """
         refined_response = query_graphrag(Refinement_Prompt, retrieval_strategy, args.mistral)
         print("refined_response", refined_response)
@@ -298,6 +302,10 @@ if __name__ == '__main__':
                 Here is the question: "{QUERY_QUESTION}".
                 Here is the refined answer: "{refined_response}".
                 Please give a score only from 1-5(type: float) in JSON format about whether the refined response is satisfactory. Please just give the score only and you must score fairly without worrying about appearances and I am able to tolerate low scores.
+                Give a lower score if the answer does not meet the following requirement: 
+                a multiple-choice question should not have any explanations, only the answer letter; 
+                a short question should have a concise answer; 
+                an open-ended question should have a detailed answer.
             """
         score = query_graphrag(Scoring_Prompt, retrieval_strategy, args.mistral)
         score = float(score)
