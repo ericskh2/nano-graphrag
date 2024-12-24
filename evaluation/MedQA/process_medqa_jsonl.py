@@ -42,7 +42,7 @@ with open(jsonl_file_path, "r") as file:
 
 question_idx = 1
 for q in questions:
-    prompt = f"You are a multiple-choice question answering assistant. Here is a question and its choices: Question: {q['question']} Options: {q['options']} Respond with the correct choice's letter (A/B/C/D) only, without any explanation."
+    prompt = f"Question: {q['question']} Options: {q['options']}"
     # Open a file in write mode ('w'), or create the file if it doesn't exist
     with open(os.path.join(question_output_folder, f'{question_idx}.txt'), 'w') as file:
         file.write(prompt)

@@ -14,11 +14,6 @@ import argparse
 logging.basicConfig(level=logging.WARNING)
 logging.getLogger("nano-graphrag").setLevel(logging.INFO)
 
-# QUERY_QUESTION = "What is web3?"
-# QUERY_QUESTION = "Provide a summary of the development history of web3"
-# QUERY_QUESTION = "How does Bitcoin enhance the privacy level of transactions when compared to the traditional banking model?​"
-QUERY_QUESTION = None
-
 # Path setup
 # web3_text_path = "/research/d2/msc/khsew24/cryptoKGTutorial/txtWhitePapers/*.txt"
 
@@ -84,9 +79,7 @@ def remove_if_exist(file):
         os.remove(file)
 
 
-
-
-def query():
+def query(raw_query_question=None, prompt_mode=None):
     rag = GraphRAG(
         working_dir=WORKING_DIR,
         best_model_func=llm_model_if_cache,
@@ -94,16 +87,27 @@ def query():
         embedding_func=ollama_embedding,
     )
 
+    if prompt_mode == 'explanation':
+        prompt_content = f'Answer the following question and provide a detailed explanation for your answer:: {raw_query_question}'
+    elif prompt_mode == 'noexplanation':
+        prompt_content = f'You are a question answering assistant. You will be given a question. The answer to the question is a word or entity. Answer directly without punctuation and without explanation: {raw_query_question}'
+    elif prompt_mode == 'multiplechoice':
+        prompt_content = f"You are a multiple-choice question answering assistant. You will be given a question and its choices. Respond with the correct choice's letter (A/B/C/D/E/F) only, without any explanation: {raw_query_question}"
+    else:
+        raise Exception(f'Unknown prompt_mode {prompt_mode}!')
+    
+    print('prompt_content:', prompt_content)
+
     # Open the file in write mode
     with open(args.query_output_path, "w") as file:
         # Use the print function with the file parameter
         print(
             rag.query(
-                QUERY_QUESTION, param=QueryParam(mode="global")
+                prompt_content, param=QueryParam(mode="global")
             ),
             file=file
         )
-        
+
 def insert(documents_directory_path):
     from time import time
 
@@ -185,7 +189,8 @@ if __name__ == "__main__":
     parser.add_argument('--documents_path', type=str, help='Path to the document directory that contains corpus txt files')
     parser.add_argument('--query_input_path', type=str, help='Path to the input txt file that contains the question')
     parser.add_argument('--query_output_path', type=str, help='Path to the output file tht outputs the answer')
-    
+    parser.add_argument('--prompt_mode', type=str, help='Path to the output file tht outputs the answer')
+
     # Parse the arguments
     args = parser.parse_args()
     
@@ -199,7 +204,11 @@ if __name__ == "__main__":
     if args.run_query:
         # Open the file in read mode and read its contents into a string
         with open(args.query_input_path, "r") as file:
-            QUERY_QUESTION = file.read()  # Read the entire file as a single string
+            raw_query_question = file.read()  # Read the entire file as a single string
         
-        print(f'QUERY_QUESTION read from file: {QUERY_QUESTION}')
-        query()
+        prompt_mode = args.prompt_mode
+
+        print(f'raw_query_question read from file: {raw_query_question}')
+        print(f'prompt_mode: {prompt_mode}')
+
+        query(raw_query_question=raw_query_question, prompt_mode=prompt_mode)
