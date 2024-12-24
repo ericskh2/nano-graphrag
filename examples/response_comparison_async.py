@@ -214,10 +214,10 @@ for filename in file_list:
         else:
             try:
                 start = time()
-                os.system(f"python ./examples/multi_agent_graphrag_parser.py --work_directory {args.work_directory} --query_input_path {filename} --query_output_path {args.query_output_path}/with_multiagent_rag/response_{os.path.basename(filename)}")
+                os.system(f"python ./examples/multi_agent_graphrag_parser_async.py --work_directory {args.work_directory} --query_input_path {filename} --query_output_path {args.query_output_path}/with_multiagent_rag/response_{os.path.basename(filename)}")
             except:
                 start = time()
-                os.system(f"python ./examples/multi_agent_graphrag_parser.py --work_directory {args.work_directory} --query_input_path {filename} --query_output_path {args.query_output_path}/with_multiagent_rag/response_{os.path.basename(filename)}")
+                os.system(f"python ./examples/multi_agent_graphrag_parser_async.py --work_directory {args.work_directory} --query_input_path {filename} --query_output_path {args.query_output_path}/with_multiagent_rag/response_{os.path.basename(filename)}")
         time_taken = time() - start
         timing["with_multiagent_rag"][filename] = time_taken
         print(f"(With the use of Multi-agent GraphRAG) query time for {filename}:", time_taken)
