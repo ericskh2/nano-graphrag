@@ -100,12 +100,12 @@ def comparison_agent(question, answer1, answer2, answer3 , mistral):
 
                     For each criterion, choose the better answer (either Answer 1, Answer 2 or Answer 3) and explain why. Then, select an overall winner based on these three categories.
                      """})
-    messages.append({"role": "user", "content": "Here is the question: {question}"})
-    messages.append({"role": "user", "content": "Here is answer 1: {answer1}"})
-    messages.append({"role": "user", "content": "Here is answer 2: {answer2}"})
-    messages.append({"role": "user", "content": "Here is answer 3: {answer3}"})
+    messages.append({"role": "system", "content": "Here is the question: {question}"})
+    messages.append({"role": "system", "content": "Here is answer 1: {answer1}"})
+    messages.append({"role": "system", "content": "Here is answer 2: {answer2}"})
+    messages.append({"role": "system", "content": "Here is answer 3: {answer3}"})
     messages.append({"role": "user", "content": "Evaluate the above answers using the three criteria listed above and provide detailed explanations for each criterion."})
-    messages.append({"role": "system", "content": 
+    messages.append({"role": "user", "content": 
                      """Output your evaluation in the following JSON format:
                         {{
                             "Comprehensiveness": {{
@@ -162,37 +162,37 @@ except:
 
 timing = {"without_rag": {}, "with_rag": {}, "with_multiagent_rag": {}}
 
-# 1. Run query without the use of GraphRAG
-for filename in file_list:
-    print(filename)
-    with open(filename, 'r', encoding='utf-8-sig') as file:
-        # Read the contents of the file
-        start = time()
-        file_contents = file.read()
-        response = query_without_rag(f"{file_contents}", args.mistral)
-        with open(f"{args.query_output_path}/without_rag/response_{os.path.basename(filename)}", "w") as f:
-            print(response, file=f)
-        time_taken = time() - start
-        timing["without_rag"][filename] = time_taken
-        print(f"(Without the use of GraphRAG) query time for {filename}:", time_taken)
+# # 1. Run query without the use of GraphRAG
+# for filename in file_list:
+#     print(filename)
+#     with open(filename, 'r', encoding='utf-8-sig') as file:
+#         # Read the contents of the file
+#         start = time()
+#         file_contents = file.read()
+#         response = query_without_rag(f"{file_contents}", args.mistral)
+#         with open(f"{args.query_output_path}/without_rag/response_{os.path.basename(filename)}", "w") as f:
+#             print(response, file=f)
+#         time_taken = time() - start
+#         timing["without_rag"][filename] = time_taken
+#         print(f"(Without the use of GraphRAG) query time for {filename}:", time_taken)
 
-# 2. Run query with the use of GraphRAG
-for filename in file_list:
-    print(filename)
-    with open(filename, 'r', encoding='utf-8-sig') as file:
-        try:
-            os.mkdir(f"{args.query_output_path}/with_rag/response_{filename}")
-        except:
-            pass 
-        # Read the contents of the file
-        start = time()
-        if args.mistral:
-            os.system(f"python ./examples/using_mistral_as_llm+ollama_embedding.py --run_query --working_directory {args.work_directory} --query_input_path {filename} --query_output_path {args.query_output_path}/with_rag/response_{os.path.basename(filename)}")
-        else:
-            os.system(f"python ./examples/using_llm_api_as_llm+ollama_embedding.py --run_query --working_directory {args.work_directory} --query_input_path {filename} --query_output_path {args.query_output_path}/with_rag/response_{os.path.basename(filename)}")
-        time_taken = time() - start
-        timing["with_rag"][filename] = time_taken
-        print(f"(With the use of GraphRAG) query time for {filename}:", time_taken)
+# # 2. Run query with the use of GraphRAG
+# for filename in file_list:
+#     print(filename)
+#     with open(filename, 'r', encoding='utf-8-sig') as file:
+#         try:
+#             os.mkdir(f"{args.query_output_path}/with_rag/response_{filename}")
+#         except:
+#             pass 
+#         # Read the contents of the file
+#         start = time()
+#         if args.mistral:
+#             os.system(f"python ./examples/using_mistral_as_llm+ollama_embedding.py --run_query --working_directory {args.work_directory} --query_input_path {filename} --query_output_path {args.query_output_path}/with_rag/response_{os.path.basename(filename)}")
+#         else:
+#             os.system(f"python ./examples/using_llm_api_as_llm+ollama_embedding.py --run_query --working_directory {args.work_directory} --query_input_path {filename} --query_output_path {args.query_output_path}/with_rag/response_{os.path.basename(filename)}")
+#         time_taken = time() - start
+#         timing["with_rag"][filename] = time_taken
+#         print(f"(With the use of GraphRAG) query time for {filename}:", time_taken)
 
 # 3. Run query with the use of Multi-agent GraphRAG
 for filename in file_list:
@@ -203,11 +203,20 @@ for filename in file_list:
             os.mkdir(f"{args.query_output_path}/with_rag/response_{filename}")
         except:
             pass 
-        start = time()
         if args.mistral:
-            os.system(f"python ./examples/multi_agent_graphrag_parser.py --work_directory {args.work_directory} --query_input_path {filename} --query_output_path {args.query_output_path}/with_multiagent_rag/response_{os.path.basename(filename)} --mistral")
+            try:
+                start = time()
+                os.system(f"python ./examples/multi_agent_graphrag_parser.py --work_directory {args.work_directory} --query_input_path {filename} --query_output_path {args.query_output_path}/with_multiagent_rag/response_{os.path.basename(filename)} --mistral")
+            except:
+                start = time()
+                os.system(f"python ./examples/multi_agent_graphrag_parser.py --work_directory {args.work_directory} --query_input_path {filename} --query_output_path {args.query_output_path}/with_multiagent_rag/response_{os.path.basename(filename)} --mistral")
         else:
-            os.system(f"python ./examples/multi_agent_graphrag_parser.py --work_directory {args.work_directory} --query_input_path {filename} --query_output_path {args.query_output_path}/with_multiagent_rag/response_{os.path.basename(filename)}")
+            try:
+                start = time()
+                os.system(f"python ./examples/multi_agent_graphrag_parser.py --work_directory {args.work_directory} --query_input_path {filename} --query_output_path {args.query_output_path}/with_multiagent_rag/response_{os.path.basename(filename)}")
+            except:
+                start = time()
+                os.system(f"python ./examples/multi_agent_graphrag_parser.py --work_directory {args.work_directory} --query_input_path {filename} --query_output_path {args.query_output_path}/with_multiagent_rag/response_{os.path.basename(filename)}")
         time_taken = time() - start
         timing["with_multiagent_rag"][filename] = time_taken
         print(f"(With the use of Multi-agent GraphRAG) query time for {filename}:", time_taken)

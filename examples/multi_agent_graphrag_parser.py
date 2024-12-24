@@ -10,6 +10,8 @@ from nano_graphrag import GraphRAG, QueryParam
 from nano_graphrag.base import BaseKVStorage
 from nano_graphrag._utils import compute_args_hash, wrap_embedding_func_with_attrs
 import glob
+import re
+import time
 
 # logger settings
 logging.basicConfig(level=logging.WARNING)
@@ -43,7 +45,7 @@ async def llm_model_mistral_if_cache(
 
     # print("kwargs",kwargs)
     response = client.chat.complete(
-        model=llm_model, messages=messages, **kwargs
+        model=llm_model, messages=messages
     )
 
     # Cache the response if having-------------------
@@ -55,7 +57,7 @@ async def llm_model_mistral_if_cache(
     return response.choices[0].message.content
 
 
-SYSTEM_PROMPT_TEMPLATE = "You are an intelligent assistant and will follow the instructions given to you to fulfill the goal. The answer should be in the format as in the given example. You must respond in JSON object."
+SYSTEM_PROMPT_TEMPLATE = "You are an intelligent assistant and will follow the instructions given to you to fulfill the goal. The answer should be in the format as in the given example. You must enclose your respond in JSON object."
 async def llm_model_deepseek_if_cache(
         prompt, system_prompt=SYSTEM_PROMPT_TEMPLATE, history_messages=[], **kwargs
 ) -> str:
@@ -193,7 +195,7 @@ def scoring_alt(QUERY_QUESTION, mistral):
         )
     print('Running alternate scoring agent')
     response: str = chat_response.choices[0].message.content
-    return float(response)
+    return response
 
 def query_graphrag(QUERY_QUESTION, mode, mistral):
     if mistral:
@@ -286,8 +288,13 @@ if __name__ == '__main__':
     with open(INPUT_PATH, 'r') as file:
         QUERY_QUESTION = file.read()
 
-    retrieval_strategy = query_retrieval_strategy(QUERY_QUESTION, args.mistral)
-    print("retrieval_strategy", retrieval_strategy)
+    try:
+        retrieval_strategy = query_retrieval_strategy(QUERY_QUESTION, args.mistral)
+        print("retrieval_strategy", retrieval_strategy)
+    except:
+        time.sleep(1)
+        retrieval_strategy = query_retrieval_strategy(QUERY_QUESTION, args.mistral)
+        print("retrieval_strategy", retrieval_strategy)
 
     score_threshold: float = 4.0
     iteration_threshold: int = 3
@@ -297,8 +304,13 @@ if __name__ == '__main__':
     while max_score < score_threshold and iteration_cnt < iteration_threshold:
         iteration_cnt += 1
 
-        generated_response = query_graphrag(QUERY_QUESTION, retrieval_strategy, args.mistral)
-        print("generated_response", generated_response)
+        try:
+            generated_response = query_graphrag(QUERY_QUESTION, retrieval_strategy, args.mistral)
+            print("generated_response", generated_response)
+        except:
+            time.sleep(1)
+            generated_response = query_graphrag(QUERY_QUESTION, retrieval_strategy, args.mistral)
+            print("generated_response", generated_response)
 
         FeedBack_Prompt = f"""
                 Here is the question: "{QUERY_QUESTION}".
@@ -307,8 +319,13 @@ if __name__ == '__main__':
                 If the question is multiple-choice type, please verify the answer and give the reasons."
                 If the question is a short question, please give your feedback on the answer and verify its correctness, longer answers are not accepted.
             """
-        feedback = query_graphrag(FeedBack_Prompt, retrieval_strategy, args.mistral)
-        print("feedback", feedback)
+        try:
+            feedback = query_graphrag(FeedBack_Prompt, retrieval_strategy, args.mistral)
+            print("feedback", feedback)
+        except:
+            time.sleep(1)
+            feedback = query_graphrag(FeedBack_Prompt, retrieval_strategy, args.mistral)
+            print("feedback", feedback)
 
         Refinement_Prompt = f"""
                Here is the question: "{QUERY_QUESTION}".
@@ -318,8 +335,13 @@ if __name__ == '__main__':
                If the question is multiple-choice type, please revise the answer based on the feedback and return the correct answer (a single letter only, such as: A, B, C, D or E).
                If the question is a short question, only return the answer directly based on the feedback.
             """
-        refined_response = query_graphrag(Refinement_Prompt, retrieval_strategy, args.mistral)
-        print("refined_response", refined_response)
+        try:
+            refined_response = query_graphrag(Refinement_Prompt, retrieval_strategy, args.mistral)
+            print("refined_response", refined_response)
+        except:
+            time.sleep(1)
+            refined_response = query_graphrag(Refinement_Prompt, retrieval_strategy, args.mistral)
+            print("refined_response", refined_response)
 
         Scoring_Prompt = f"""
                 Here is the question: "{QUERY_QUESTION}".
@@ -329,10 +351,15 @@ if __name__ == '__main__':
             """
         try:
             score = query_graphrag(Scoring_Prompt, retrieval_strategy, args.mistral)
-            score = float(score)
+            match = re.search(r"[-+]?\d*\.\d+|\d+", score)
+            if match:
+                score = float(match.group())
         except:
+            time.sleep(1)
             score = scoring_alt(Scoring_Prompt, args.mistral)
-            score = float(score)
+            match = re.search(r"[-+]?\d*\.\d+|\d+", score)
+            if match:
+                score = float(match.group())
         print("score", score)
 
         if score > max_score:
