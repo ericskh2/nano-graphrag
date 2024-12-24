@@ -108,7 +108,7 @@ python examples/response_comparison.py \
     --work_directory <Path to store the GraphRAG Backend> \
     --query_input_path <Path to the input txt file that contains the question> \
     --query_output_path <Path to the output file tht outputs the answer> \
-    --mistral // only add this line is using Mistral API
+    --mistral // only add this line if using Mistral API
 ```
 Subdirectories will be created under the specified output path for each method, including `without_rag`, `with_rag` and `with_multiagent_rag`.
 An extra subdirectories 'final_comparison' will store JSON files that contain LLM's evaluation on the responses from each method on three aspects, namely: Comprehensiveness, Diversity and Empowerment.
