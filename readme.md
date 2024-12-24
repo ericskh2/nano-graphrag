@@ -55,6 +55,7 @@ export LLM_MODEL="model-name"
 ```
 
 Insert documents
+
 (For non-Mistral API usage)
 ```
 python examples/using_llm_api_as_llm+ollama_embedding.py \
@@ -71,6 +72,42 @@ python examples/using_mistral_api_as_llm+ollama_embedding.py \
 ```
 
 Query
+
+1. Non-multi Agent Use Case
+
+(For non-Mistral API usage)
 ```
-TODO
+python examples/using_llm_api_as_llm+ollama_embedding.py \
+    --run_query \
+    --working_directory <Path to store the GraphRAG Backend> \
+    --query_input_path <Path to the input txt file that contains the question> \
+    --query_output_path <Path to the output file tht outputs the answer>
 ```
+(For Mistral API usage)
+```
+python examples/using_mistral_api_as_llm+ollama_embedding.py \
+    --run_query \
+    --working_directory <Path to store the GraphRAG Backend> \
+    --query_input_path <Path to the input txt file that contains the question> \
+    --query_output_path <Path to the output file tht outputs the answer>
+```
+
+2. Multi Agent Use Case
+```
+python examples/multi_agent_graphrag_parser.py \
+    --work_directory <Path to store the GraphRAG Backend> \
+    --query_input_path <Path to the input txt file that contains the question> \
+    --query_output_path <Path to the output file tht outputs the answer> \
+    --mistral // only add this line is using Mistral API
+```
+
+3. Run comparison between (without GraphRAG, with GraphRAG, and with Multi Agent GraphRAG)
+```
+python examples/response_comparison.py \
+    --work_directory <Path to store the GraphRAG Backend> \
+    --query_input_path <Path to the input txt file that contains the question> \
+    --query_output_path <Path to the output file tht outputs the answer> \
+    --mistral // only add this line is using Mistral API
+```
+Subdirectories will be created under the specified output path for each method, including `without_rag`, `with_rag` and `with_multiagent_rag`.
+An extra subdirectories 'final_comparison' will store JSON files that contain LLM's evaluation on the responses from each method on three aspects, namely: Comprehensiveness, Diversity and Empowerment.
