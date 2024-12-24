@@ -11,11 +11,11 @@ Setup conda environment
 conda env create --name custom_env_name -f environment.yml
 ```
 
-Download Ollama from https://github.com/ollama/ollama/releases
+Download Ollama from https://ollama.com/ or https://github.com/ollama/ollama/releases
 
-Pull new model 
+Pull new embedding model 
 ```
-./ollama-linux-amd64/bin/ollama pull qwen2 
+ollama pull nomic-embed-text 
 ```
 
 If intend to run with Mistral AI (Optional)
@@ -25,6 +25,7 @@ pip install mistralai
 
 
 ## Usage
+### Setup ollama
 
 Start ollama model (Linux with Command-line Interface)
 ```
@@ -33,7 +34,7 @@ export no_proxy=localhost,127.0.0.0,127.0.0.1,127.0.1.1
 ```
 or run the ollama application (for Windows and MacOS)
 
-Create Embedding Model (Only required if not set)
+### Create Embedding Model (Required for first time usage)
 ```
 ollama show --modelfile nomic-embed-text > Modelfile
 ```
@@ -46,7 +47,7 @@ Add a new line into this `Modelfile` below the 'FROM':
 ollama create -f Modelfile nomic-embed-text:ctx32k
 ```
 
-Setup nano-graphrag
+### Setup environment variables for LLM API usage
 ```
 cd <Path to nano-graphrag>
 export LLM_BASE_URL="https://api.deepseek.com" // or other api
@@ -54,7 +55,7 @@ export LLM_API_KEY="YOUR-KEY"
 export LLM_MODEL="model-name" 
 ```
 
-Insert documents
+### Insert documents
 
 (For non-Mistral API usage)
 ```
@@ -71,7 +72,7 @@ python examples/using_mistral_api_as_llm+ollama_embedding.py \
     --documents_path <Path to document folder containing txt files> 
 ```
 
-Query
+### Query
 
 1. Non-multi Agent Use Case
 
