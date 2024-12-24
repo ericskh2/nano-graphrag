@@ -296,6 +296,14 @@ if __name__ == '__main__':
         retrieval_strategy = query_retrieval_strategy(QUERY_QUESTION, args.mistral)
         print("retrieval_strategy", retrieval_strategy)
 
+    try:
+        generated_response = query_graphrag(QUERY_QUESTION, retrieval_strategy, args.mistral)
+        print("generated_response", generated_response)
+    except:
+        time.sleep(1)
+        generated_response = query_graphrag(QUERY_QUESTION, retrieval_strategy, args.mistral)
+        print("generated_response", generated_response)
+
     score_threshold: float = 4.0
     iteration_threshold: int = 3
     max_score: float = 0.0
@@ -303,14 +311,6 @@ if __name__ == '__main__':
     best_response = None
     while max_score < score_threshold and iteration_cnt < iteration_threshold:
         iteration_cnt += 1
-
-        try:
-            generated_response = query_graphrag(QUERY_QUESTION, retrieval_strategy, args.mistral)
-            print("generated_response", generated_response)
-        except:
-            time.sleep(1)
-            generated_response = query_graphrag(QUERY_QUESTION, retrieval_strategy, args.mistral)
-            print("generated_response", generated_response)
 
         FeedBack_Prompt = f"""
                 Here is the question: "{QUERY_QUESTION}".
@@ -365,6 +365,7 @@ if __name__ == '__main__':
         if score > max_score:
             max_score = score
             best_response = refined_response
+            generated_response = best_response
 
     print("best_response", best_response)
     print("best_score", max_score)
