@@ -2,6 +2,7 @@ import os
 import logging
 import ollama
 import numpy as np
+import openai  # Import the whole openai module
 from openai import AsyncOpenAI
 from nano_graphrag import GraphRAG, QueryParam
 from nano_graphrag import GraphRAG, QueryParam
@@ -10,6 +11,7 @@ from nano_graphrag._utils import compute_args_hash, wrap_embedding_func_with_att
 import glob
 import os
 import argparse
+import asyncio
 
 logging.basicConfig(level=logging.WARNING)
 logging.getLogger("nano-graphrag").setLevel(logging.INFO)
@@ -59,9 +61,20 @@ async def llm_model_if_cache(
     
     # print('-'*10)
 
-    response = await openai_async_client.chat.completions.create(
-        model=MODEL, messages=messages, **kwargs
-    )
+    retries = 10
+    for attempt in range(retries):
+        try:
+            response = await openai_async_client.chat.completions.create(
+                model=MODEL, messages=messages, timeout=60, **kwargs  # Set timeout here
+            )
+            break  # Exit loop if successful
+        except (openai.error.APIError, openai.error.Timeout) as e:
+            logging.warning(f"Attempt {attempt + 1} failed: {e}")
+            if attempt < retries - 1:
+                await asyncio.sleep(2)  # Wait before retrying
+            else:
+                raise  # Re-raise the last exception
+
 
     # Cache the response if having-------------------
     if hashing_kv is not None:
