@@ -39,6 +39,12 @@ parser.add_argument(
     help='Using Mistral AI as LLM'
 )
 
+parser.add_argumment(
+    '--alternate_agent',
+    action='store_true',
+    help='Using non Graph-RAG Feedback, Refinement and Scoring Agent'
+)
+
 # Parse the arguments
 args = parser.parse_args()
 file_list = glob.glob(args.query_input_path+'/'+'*.txt')
@@ -205,19 +211,35 @@ for filename in file_list:
         except:
             pass 
         if args.mistral:
-            try:
-                start = time()
-                os.system(f"python ./examples/multi_agent_graphrag_parser.py --work_directory {args.work_directory} --query_input_path {filename} --query_output_path {args.query_output_path}/with_multiagent_rag/response_{os.path.basename(filename)} --mistral")
-            except:
-                start = time()
-                os.system(f"python ./examples/multi_agent_graphrag_parser.py --work_directory {args.work_directory} --query_input_path {filename} --query_output_path {args.query_output_path}/with_multiagent_rag/response_{os.path.basename(filename)} --mistral")
+            if args.alternate_agent:
+                try:
+                    start = time()
+                    os.system(f"python ./examples/multi_agent_graphrag_parser_async.py --work_directory {args.work_directory} --query_input_path {filename} --query_output_path {args.query_output_path}/with_multiagent_rag/response_{os.path.basename(filename)} --mistral --alternate_agent")
+                except:
+                    start = time()
+                    os.system(f"python ./examples/multi_agent_graphrag_parser_async.py --work_directory {args.work_directory} --query_input_path {filename} --query_output_path {args.query_output_path}/with_multiagent_rag/response_{os.path.basename(filename)} --mistral --alternate_agent")
+            else:
+                try:
+                    start = time()
+                    os.system(f"python ./examples/multi_agent_graphrag_parser_async.py --work_directory {args.work_directory} --query_input_path {filename} --query_output_path {args.query_output_path}/with_multiagent_rag/response_{os.path.basename(filename)} --mistral")
+                except:
+                    start = time()
+                    os.system(f"python ./examples/multi_agent_graphrag_parser_async.py --work_directory {args.work_directory} --query_input_path {filename} --query_output_path {args.query_output_path}/with_multiagent_rag/response_{os.path.basename(filename)} --mistral")
         else:
-            try:
-                start = time()
-                os.system(f"python ./examples/multi_agent_graphrag_parser_async.py --work_directory {args.work_directory} --query_input_path {filename} --query_output_path {args.query_output_path}/with_multiagent_rag/response_{os.path.basename(filename)}")
-            except:
-                start = time()
-                os.system(f"python ./examples/multi_agent_graphrag_parser_async.py --work_directory {args.work_directory} --query_input_path {filename} --query_output_path {args.query_output_path}/with_multiagent_rag/response_{os.path.basename(filename)}")
+            if args.alternate_agent:
+                try:
+                    start = time()
+                    os.system(f"python ./examples/multi_agent_graphrag_parser_async.py --work_directory {args.work_directory} --query_input_path {filename} --query_output_path {args.query_output_path}/with_multiagent_rag/response_{os.path.basename(filename)} --alternate_agent")
+                except:
+                    start = time()
+                    os.system(f"python ./examples/multi_agent_graphrag_parser_async.py --work_directory {args.work_directory} --query_input_path {filename} --query_output_path {args.query_output_path}/with_multiagent_rag/response_{os.path.basename(filename)} --alternate_agent")
+            else:
+                try:
+                    start = time()
+                    os.system(f"python ./examples/multi_agent_graphrag_parser_async.py --work_directory {args.work_directory} --query_input_path {filename} --query_output_path {args.query_output_path}/with_multiagent_rag/response_{os.path.basename(filename)}")
+                except:
+                    start = time()
+                    os.system(f"python ./examples/multi_agent_graphrag_parser_async.py --work_directory {args.work_directory} --query_input_path {filename} --query_output_path {args.query_output_path}/with_multiagent_rag/response_{os.path.basename(filename)}")
         time_taken = time() - start
         timing["with_multiagent_rag"][filename] = time_taken
         print(f"(With the use of Multi-agent GraphRAG) query time for {filename}:", time_taken)

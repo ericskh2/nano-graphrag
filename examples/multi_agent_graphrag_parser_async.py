@@ -198,6 +198,54 @@ async def scoring_alt(QUERY_QUESTION, mistral):
     response: str = chat_response.choices[0].message.content
     return response
 
+async def feedback_alt(QUERY_QUESTION, mistral):
+    if mistral:
+        client = Mistral(api_key=llm_api_key)
+    else:
+        client = AsyncOpenAI(
+            api_key=llm_api_key, base_url=llm_base_url
+        )
+    messages = []
+    system_prompt = "You are an intelligent agent responsible for giving feedback of responses from another agent. Respond in JSON format."
+    messages.append({"role": "system", "content": system_prompt})
+    messages.append({"role": "user", "content": QUERY_QUESTION})
+    if mistral:
+        chat_response = client.chat.complete(
+            model=llm_model,
+            messages=messages
+        )
+    else:
+        chat_response = await client.chat.completions.create(
+            model=llm_model, messages=messages
+        )
+    print('Running alternate feedback agent')
+    response: str = chat_response.choices[0].message.content
+    return response
+
+async def refinement_alt(QUERY_QUESTION, mistral):
+    if mistral:
+        client = Mistral(api_key=llm_api_key)
+    else:
+        client = AsyncOpenAI(
+            api_key=llm_api_key, base_url=llm_base_url
+        )
+    messages = []
+    system_prompt = "You are an intelligent agent responsible for refining the response based on the feedback provided by another agent. Respond in JSON format."
+    messages.append({"role": "system", "content": system_prompt})
+    messages.append({"role": "user", "content": QUERY_QUESTION})
+    if mistral:
+        chat_response = client.chat.complete(
+            model=llm_model,
+            messages=messages
+        )
+    else:
+        chat_response = await client.chat.completions.create(
+            model=llm_model, messages=messages
+        )
+    print('Running alternate refinement agent')
+    response: str = chat_response.choices[0].message.content
+    return response
+
 def query_graphrag(QUERY_QUESTION, mode, mistral):
     if mistral:
         rag = GraphRAG(
@@ -257,6 +305,12 @@ if __name__ == '__main__':
         '--mistral',
         action='store_true',
         help='Using Mistral AI as LLM'
+    )
+
+    parser.add_argumment(
+        '--alternate_agent',
+        action='store_true',
+        help='Using non Graph-RAG Feedback, Refinement and Scoring Agent'
     )
 
     # Parse the arguments
@@ -321,11 +375,17 @@ if __name__ == '__main__':
                 If the question is a short question, please give your feedback on the answer and verify its correctness, longer answers are not accepted.
             """
         try:
-            feedback = asyncio.run(query_graphrag(FeedBack_Prompt, retrieval_strategy, args.mistral))
+            if args.alternate_agent:
+                feedback = asyncio.run(feedback_alt(FeedBack_Prompt, args.mistral))
+            else:
+                feedback = asyncio.run(query_graphrag(FeedBack_Prompt, retrieval_strategy, args.mistral))
             print("feedback", feedback)
         except:
             time.sleep(1)
-            feedback = asyncio.run(query_graphrag(FeedBack_Prompt, retrieval_strategy, args.mistral))
+            if args.alternate_agent:
+                feedback = asyncio.run(feedback_alt(FeedBack_Prompt, args.mistral))
+            else:
+                feedback = asyncio.run(query_graphrag(FeedBack_Prompt, retrieval_strategy, args.mistral))
             print("feedback", feedback)
 
         Refinement_Prompt = f"""
@@ -337,11 +397,17 @@ if __name__ == '__main__':
                If the question is a short question, only return the answer directly based on the feedback.
             """
         try:
-            refined_response = asyncio.run(query_graphrag(Refinement_Prompt, retrieval_strategy, args.mistral))
+            if args.alternate_agent:
+                refined_response = asyncio.run(refinement_alt(Refinement_Prompt, args.mistral))
+            else:
+                refined_response = asyncio.run(query_graphrag(Refinement_Prompt, retrieval_strategy, args.mistral))
             print("refined_response", refined_response)
         except:
             time.sleep(1)
-            refined_response = asyncio.run(query_graphrag(Refinement_Prompt, retrieval_strategy, args.mistral))
+            if args.alternate_agent:
+                refined_response = asyncio.run(refinement_alt(Refinement_Prompt, args.mistral))
+            else:
+                refined_response = asyncio.run(query_graphrag(Refinement_Prompt, retrieval_strategy, args.mistral))
             print("refined_response", refined_response)
 
         Scoring_Prompt = f"""
@@ -351,16 +417,28 @@ if __name__ == '__main__':
                 Please return a score only from 1-5 (type: float) about whether the refined response is satisfactory. You must score fairly and I am able to tolerate low scores. Only a single floating point number is allowed in the response.
             """
         try:
-            score = asyncio.run(query_graphrag(Scoring_Prompt, retrieval_strategy, args.mistral))
-            match = re.search(r"[-+]?\d*\.\d+|\d+", score)
-            if match:
-                score = float(match.group())
+            if args.alternate_agent:
+                score = asyncio.run(scoring_alt(Scoring_Prompt, args.mistral))
+                match = re.search(r"[-+]?\d*\.\d+|\d+", score)
+                if match:
+                    score = float(match.group())
+            else:
+                score = asyncio.run(query_graphrag(Scoring_Prompt, retrieval_strategy, args.mistral))
+                match = re.search(r"[-+]?\d*\.\d+|\d+", score)
+                if match:
+                    score = float(match.group())
         except:
             time.sleep(1)
-            score = asyncio.run(scoring_alt(Scoring_Prompt, args.mistral))
-            match = re.search(r"[-+]?\d*\.\d+|\d+", score)
-            if match:
-                score = float(match.group())
+            if args.alternate_agent:
+                score = asyncio.run(scoring_alt(Scoring_Prompt, args.mistral))
+                match = re.search(r"[-+]?\d*\.\d+|\d+", score)
+                if match:
+                    score = float(match.group())
+            else:
+                score = asyncio.run(query_graphrag(Scoring_Prompt, retrieval_strategy, args.mistral))
+                match = re.search(r"[-+]?\d*\.\d+|\d+", score)
+                if match:
+                    score = float(match.group())
         print("score", score)
 
         if score > max_score:
