@@ -23,8 +23,9 @@ embedding_model_dim = 768
 embedding_model_max_tokens = 32000
 
 # Mistral LLM Model
+SYSTEM_PROMPT_TEMPLATE = "You are an intelligent assistant and will follow the instructions given to you to fulfill the goal. The answer should be in the format as in the given example. You must enclose your respond in JSON object."
 async def llm_model_mistral_if_cache(
-        prompt, system_prompt=None, history_messages=[], **kwargs
+        prompt, system_prompt=SYSTEM_PROMPT_TEMPLATE, history_messages=[], **kwargs
 ) -> str:
     client = Mistral(api_key=llm_api_key)
     messages = []
@@ -150,7 +151,7 @@ def query_retrieval_strategy(QUERY_QUESTION, mistral):
             api_key=llm_api_key, base_url=llm_base_url
         )
     messages = []
-    system_prompt = "You are an intelligent agent responsible for determining the appropriate query type based on the provided scenario. Your query types include local, global, and naive queries. I will give you a question and you need to analyze the question and choose the best query type to obtain the required information efficiently. Please give the answer only. Respond in JSON format."
+    system_prompt = "You are an intelligent agent responsible for determining the appropriate query type based on the provided scenario. Your query types include local, global, and naive queries. I will give you a question and you need to analyze the question and choose the best query type to obtain the required information efficiently. Please give the answer only."
     messages.append({"role": "system", "content": system_prompt})
     messages.append({"role": "user", "content": QUERY_QUESTION})
     if mistral:
@@ -181,7 +182,7 @@ def scoring_alt(QUERY_QUESTION, mistral):
             api_key=llm_api_key, base_url=llm_base_url
         )
     messages = []
-    system_prompt = "You are an intelligent agent responsible for scoring the response by another agent. Respond in JSON format."
+    system_prompt = "You are an intelligent agent responsible for scoring the response by another agent."
     messages.append({"role": "system", "content": system_prompt})
     messages.append({"role": "user", "content": QUERY_QUESTION})
     if mistral:
@@ -205,7 +206,7 @@ def feedback_alt(QUERY_QUESTION, mistral):
             api_key=llm_api_key, base_url=llm_base_url
         )
     messages = []
-    system_prompt = "You are an intelligent agent responsible for giving feedback of responses from another agent. Respond in JSON format."
+    system_prompt = "You are an intelligent agent responsible for giving feedback of responses from another agent."
     messages.append({"role": "system", "content": system_prompt})
     messages.append({"role": "user", "content": QUERY_QUESTION})
     if mistral:
@@ -229,7 +230,7 @@ def refinement_alt(QUERY_QUESTION, mistral):
             api_key=llm_api_key, base_url=llm_base_url
         )
     messages = []
-    system_prompt = "You are an intelligent agent responsible for refining the response based on the feedback provided by another agent. Respond in JSON format."
+    system_prompt = "You are an intelligent agent responsible for refining the response based on the feedback provided by another agent."
     messages.append({"role": "system", "content": system_prompt})
     messages.append({"role": "user", "content": QUERY_QUESTION})
     if mistral:
