@@ -205,16 +205,16 @@ async def main():
         with open(filename, 'r', encoding='utf-8-sig') as file:
             # Read the contents of the file
             try:
-                os.mkdir(f"{args.query_output_path}/with_rag/response_{filename}")
+                os.mkdir(f"{args.query_output_path}/with_multiagent_rag/response_{filename}")
             except:
                 pass 
             if args.mistral:
                 try:
                     start = time()
-                    os.system(f"python ./examples/multi_agent_graphrag_parser.py --work_directory {args.work_directory} --query_input_path {filename} --query_output_path {args.query_output_path}/with_multiagent_rag/response_{os.path.basename(filename)} --mistral")
+                    os.system(f"python ./examples/multi_agent_graphrag_parser_async.py --work_directory {args.work_directory} --query_input_path {filename} --query_output_path {args.query_output_path}/with_multiagent_rag/response_{os.path.basename(filename)} --mistral")
                 except:
                     start = time()
-                    os.system(f"python ./examples/multi_agent_graphrag_parser.py --work_directory {args.work_directory} --query_input_path {filename} --query_output_path {args.query_output_path}/with_multiagent_rag/response_{os.path.basename(filename)} --mistral")
+                    os.system(f"python ./examples/multi_agent_graphrag_parser_async.py --work_directory {args.work_directory} --query_input_path {filename} --query_output_path {args.query_output_path}/with_multiagent_rag/response_{os.path.basename(filename)} --mistral")
             else:
                 try:
                     start = time()

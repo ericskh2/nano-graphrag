@@ -206,7 +206,7 @@ for filename in file_list:
     with open(filename, 'r', encoding='utf-8-sig') as file:
         # Read the contents of the file
         try:
-            os.mkdir(f"{args.query_output_path}/with_rag/response_{filename}")
+            os.mkdir(f"{args.query_output_path}/with_multiagent_rag/response_{filename}")
         except:
             pass 
         if args.mistral:
