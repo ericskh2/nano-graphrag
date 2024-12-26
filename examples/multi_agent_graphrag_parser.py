@@ -5,7 +5,7 @@ import argparse
 import ollama
 import numpy as np
 from mistralai import Mistral
-from openai import AsyncOpenAI
+from openai import OpenAI, AsyncOpenAI
 from nano_graphrag import GraphRAG, QueryParam
 from nano_graphrag.base import BaseKVStorage
 from nano_graphrag._utils import compute_args_hash, wrap_embedding_func_with_attrs
@@ -147,7 +147,7 @@ def query_retrieval_strategy(QUERY_QUESTION, mistral):
     if mistral:
         client = Mistral(api_key=llm_api_key)
     else:
-        client = AsyncOpenAI(
+        client = OpenAI(
             api_key=llm_api_key, base_url=llm_base_url
         )
     messages = []
@@ -178,7 +178,7 @@ def scoring_alt(QUERY_QUESTION, mistral):
     if mistral:
         client = Mistral(api_key=llm_api_key)
     else:
-        client = AsyncOpenAI(
+        client = OpenAI(
             api_key=llm_api_key, base_url=llm_base_url
         )
     messages = []
@@ -202,7 +202,7 @@ def feedback_alt(QUERY_QUESTION, mistral):
     if mistral:
         client = Mistral(api_key=llm_api_key)
     else:
-        client = AsyncOpenAI(
+        client = OpenAI(
             api_key=llm_api_key, base_url=llm_base_url
         )
     messages = []
@@ -364,7 +364,7 @@ if __name__ == '__main__':
     max_score: float = 0.0
     iteration_cnt: int = 0
     best_response = None
-    while max_score < score_threshold and iteration_cnt < iteration_threshold:
+    while iteration_cnt < iteration_threshold:
         iteration_cnt += 1
 
         FeedBack_Prompt = f"""

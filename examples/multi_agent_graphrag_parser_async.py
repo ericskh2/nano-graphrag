@@ -365,7 +365,7 @@ if __name__ == '__main__':
     max_score: float = 0.0
     iteration_cnt: int = 0
     best_response = None
-    while max_score < score_threshold and iteration_cnt < iteration_threshold:
+    while iteration_cnt < iteration_threshold:
         iteration_cnt += 1
 
         FeedBack_Prompt = f"""

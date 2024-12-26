@@ -108,6 +108,8 @@ async def main():
                         - Comprehensiveness: How much detail does the answer provide to cover all aspects and details of the question?
                         - Diversity: How varied and rich is the answer in providing different perspectives and insights on the question?
                         - Empowerment: How well does the answer help the reader understand and make informed judgments about the topic?
+                        - Relevance: How well does the answer align with the specific requirements and context of the question?
+                        - Depth: How effectively does the answer explore underlying principles, connections, and implications beyond surface-level details?
 
                         For each criterion, choose the better answer (either Answer 1, Answer 2 or Answer 3) and explain why. Then, select an overall winner based on these three categories.
                         """})
@@ -128,6 +130,14 @@ async def main():
                                     "Explanation": "[Provide explanation here]"
                                 },
                                 "Empowerment": {
+                                    "Winner": "[Answer 1/ Answer 2/ Answer 3]",
+                                    "Explanation": "[Provide explanation here]"
+                                },
+                                "Relevance": {
+                                    "Winner": "[Answer 1/ Answer 2/ Answer 3]",
+                                    "Explanation": "[Provide explanation here]"
+                                },
+                                "Depth": {
                                     "Winner": "[Answer 1/ Answer 2/ Answer 3]",
                                     "Explanation": "[Provide explanation here]"
                                 },
@@ -294,7 +304,7 @@ def generate_summary_table(responses_folder_path, possible_winners=None, fixed_c
     if possible_winners is None:
         possible_winners = ["Answer 1", "Answer 2", "Answer 3", "Unknown"]
     if fixed_criteria is None:
-        fixed_criteria = ["Comprehensiveness", "Diversity", "Empowerment", "Overall Winner"]
+        fixed_criteria = ["Comprehensiveness", "Diversity", "Empowerment", "Relevance", "Depth", "Overall Winner"]
 
     # Initialize a dictionary to store counts
     criteria_counts = {}
