@@ -313,6 +313,12 @@ if __name__ == '__main__':
         help='Using non Graph-RAG Feedback, Refinement and Scoring Agent'
     )
 
+    parser.add_argument(
+        '--intermediate_output_path',
+        type=str,
+        help='The output path to intermediate results'
+    )
+
     # Parse the arguments
     args = parser.parse_args()
 
@@ -321,6 +327,10 @@ if __name__ == '__main__':
     INPUT_PATH = args.query_input_path
     OUTPUT_PATH = args.query_output_path
 
+    INTERMEDIATE_OUTPUT_PATH = None
+    if args.intermediate_output_path:
+        INTERMEDIATE_OUTPUT_PATH = args.intermediate_output_path
+    
     try:
         llm_base_url = os.getenv("LLM_BASE_URL")
     except:
@@ -343,6 +353,10 @@ if __name__ == '__main__':
     with open(INPUT_PATH, 'r') as file:
         QUERY_QUESTION = file.read()
 
+    if INTERMEDIATE_OUTPUT_PATH:
+        with open(INTERMEDIATE_OUTPUT_PATH, "a") as file:
+            file.write(f"QUERY_QUESTION: {QUERY_QUESTION}\n")
+
     try:
         retrieval_strategy = query_retrieval_strategy(QUERY_QUESTION, args.mistral)
         print("retrieval_strategy", retrieval_strategy)
@@ -351,6 +365,10 @@ if __name__ == '__main__':
         retrieval_strategy = query_retrieval_strategy(QUERY_QUESTION, args.mistral)
         print("retrieval_strategy", retrieval_strategy)
 
+    if INTERMEDIATE_OUTPUT_PATH:
+        with open(INTERMEDIATE_OUTPUT_PATH, "a") as file:
+            file.write(f"retrieval_strategy: {retrieval_strategy}\n")
+
     try:
         generated_response = query_graphrag(QUERY_QUESTION, retrieval_strategy, args.mistral)
         print("generated_response", generated_response)
@@ -358,6 +376,10 @@ if __name__ == '__main__':
         time.sleep(1)
         generated_response = query_graphrag(QUERY_QUESTION, retrieval_strategy, args.mistral)
         print("generated_response", generated_response)
+
+    if INTERMEDIATE_OUTPUT_PATH:
+        with open(INTERMEDIATE_OUTPUT_PATH, "a") as file:
+            file.write(f"generated_response: {generated_response}\n")
 
     score_threshold: float = 4.0
     iteration_threshold: int = 3
@@ -366,6 +388,10 @@ if __name__ == '__main__':
     best_response = None
     while iteration_cnt < iteration_threshold:
         iteration_cnt += 1
+
+        if INTERMEDIATE_OUTPUT_PATH:
+            with open(INTERMEDIATE_OUTPUT_PATH, "a") as file:
+                file.write(f"iteration_cnt: {iteration_cnt}\n")
 
         FeedBack_Prompt = f"""
                 Here is the question: "{QUERY_QUESTION}".
@@ -388,6 +414,10 @@ if __name__ == '__main__':
                 feedback = query_graphrag(FeedBack_Prompt, retrieval_strategy, args.mistral)
             print("feedback", feedback)
 
+        if INTERMEDIATE_OUTPUT_PATH:
+            with open(INTERMEDIATE_OUTPUT_PATH, "a") as file:
+                file.write(f"feedback: {feedback}\n")
+
         Refinement_Prompt = f"""
                Here is the question: "{QUERY_QUESTION}".
                This is the initial response: "{generated_response}".
@@ -409,6 +439,10 @@ if __name__ == '__main__':
             else:
                 refined_response = query_graphrag(Refinement_Prompt, retrieval_strategy, args.mistral)
             print("refined_response", refined_response)
+
+        if INTERMEDIATE_OUTPUT_PATH:
+            with open(INTERMEDIATE_OUTPUT_PATH, "a") as file:
+                file.write(f"refined_response: {refined_response}\n")
 
         Scoring_Prompt = f"""
                 Here is the question: "{QUERY_QUESTION}".
@@ -441,6 +475,10 @@ if __name__ == '__main__':
                     score = float(match.group())
         print("score", score)
 
+        if INTERMEDIATE_OUTPUT_PATH:
+            with open(INTERMEDIATE_OUTPUT_PATH, "a") as file:
+                file.write(f"score: {score}\n")
+
         if isinstance(score, float) and score > max_score:
             max_score = score
             best_response = refined_response
@@ -448,6 +486,14 @@ if __name__ == '__main__':
 
     print("best_response", best_response)
     print("best_score", max_score)
+
+    if INTERMEDIATE_OUTPUT_PATH:
+        with open(INTERMEDIATE_OUTPUT_PATH, "a") as file:
+            file.write(f"best_response: {best_response}\n")
+
+    if INTERMEDIATE_OUTPUT_PATH:
+        with open(INTERMEDIATE_OUTPUT_PATH, "a") as file:
+            file.write(f"best_score: {max_score}\n")
 
     with open(OUTPUT_PATH, 'w') as file:
         file.write(
