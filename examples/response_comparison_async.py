@@ -39,7 +39,7 @@ parser.add_argument(
     help='Using Mistral AI as LLM'
 )
 
-parser.add_argumment(
+parser.add_argument(
     '--alternate_agent',
     action='store_true',
     help='Using non Graph-RAG Feedback, Refinement and Scoring Agent'
