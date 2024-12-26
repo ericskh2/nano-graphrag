@@ -70,7 +70,7 @@ async def llm_model_deepseek_if_cache(
         messages.append({"role": "system", "content": system_prompt})
 
     # Get the cached response if having-------------------
-    # hashing_kv: BaseKVStorage = kwargs.pop("hashing_kv", None)
+    hashing_kv: BaseKVStorage = kwargs.pop("hashing_kv", None)
     messages.extend(history_messages)
     messages.append({"role": "user", "content": prompt})
 
