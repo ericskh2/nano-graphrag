@@ -62,7 +62,7 @@ SYSTEM_PROMPT_TEMPLATE = "You are an intelligent assistant and will follow the i
 async def llm_model_deepseek_if_cache(
         prompt, system_prompt=SYSTEM_PROMPT_TEMPLATE, history_messages=[], **kwargs
 ) -> str:
-    openai_async_client = AsyncOpenAI(
+    openai_sync_client = OpenAI(
         api_key=llm_api_key, base_url=llm_base_url
     )
     messages = []
@@ -81,7 +81,7 @@ async def llm_model_deepseek_if_cache(
     #         return if_cache_return["return"]
     # -----------------------------------------------------
 
-    response = await openai_async_client.chat.completions.create(
+    response = openai_sync_client.chat.completions.create(
         model=llm_model, messages=messages, **kwargs
     )
 
@@ -226,7 +226,7 @@ def refinement_alt(QUERY_QUESTION, mistral):
     if mistral:
         client = Mistral(api_key=llm_api_key)
     else:
-        client = AsyncOpenAI(
+        client = OpenAI(
             api_key=llm_api_key, base_url=llm_base_url
         )
     messages = []
@@ -441,7 +441,7 @@ if __name__ == '__main__':
                     score = float(match.group())
         print("score", score)
 
-        if score > max_score:
+        if isinstance(score, float) and score > max_score:
             max_score = score
             best_response = refined_response
             generated_response = best_response
