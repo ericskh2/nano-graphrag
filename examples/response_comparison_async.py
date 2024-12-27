@@ -98,17 +98,18 @@ async def comparison_agent(question, answer1, answer2, answer3 , mistral):
         )
     messages = []
     messages.append({"role": "system", "content": """
-                     You are an expert tasked with evaluating two answers to the same question based on three criteria: *Comprehensiveness, **Diversity, and **Empowerment**.
+                     You are an expert tasked with evaluating two answers to the same question based on five criteria: *Comprehensiveness, **Diversity, **Empowerment**, **Relevance** and **Depth**.
                      ---Goal---
-                    You will evaluate two answers to the same question based on three criteria: *Comprehensiveness, **Diversity, and **Empowerment*.
+                     You will evaluate two answers to the same question based on five criteria: *Comprehensiveness, **Diversity, **Empowerment**, **Relevance** and **Depth**.
 
-                    - Comprehensiveness: How much detail does the answer provide to cover all aspects and details of the question?
-                    - Diversity: How varied and rich is the answer in providing different perspectives and insights on the question?
-                    - Empowerment: How well does the answer help the reader understand and make informed judgments about the topic?
-                    - Relevance: How well does the answer align with the specific requirements and context of the question?
-                    - Depth: How effectively does the answer explore underlying principles, connections, and implications beyond surface-level details?
+                     - Comprehensiveness: How much detail does the answer provide to cover all aspects and details of the question?
+                     - Diversity: How varied and rich is the answer in providing different perspectives and insights on the question?
+                     - Empowerment: How well does the answer help the reader understand and make informed judgments about the topic?
+                     - Relevance: How well does the answer align with the specific requirements and context of the question?
+                     - Depth: How effectively does the answer explore underlying principles, connections, and implications beyond surface-level details?
+                     
 
-                    For each criterion, choose the better answer (either Answer 1, Answer 2 or Answer 3) and explain why. Then, select an overall winner based on these five categories.
+                     For each criterion, choose the better answer (either Answer 1, Answer 2 or Answer 3) and explain why. Then, select an overall winner based on these five categories.
                      """})
     messages.append({"role": "system", "content": f"Here is the question: {question}"})
     messages.append({"role": "user", "content": f"Here is answer 1: {answer1}"})
