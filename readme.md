@@ -114,4 +114,4 @@ python examples/looporder_response_comparison.py \
 Alternatively, you may run the async version `looporder_response_comparison_async.py`
 
 Subdirectories will be created under the specified output path for each method, including `without_rag`, `with_rag` and `with_multiagent_rag`.
-An extra subdirectories `final_comparison` will store JSON files that contain LLM's evaluation on the responses from each method on three aspects, namely: Comprehensiveness, Diversity and Empowerment.
+An extra subdirectories `final_comparison` and `final_comparison_ragonly` will store JSON files that contain LLM's evaluation on the responses from each method on the five aspects, namely: Comprehensiveness, Diversity, Empowerment, Relavance and Depth.
