@@ -108,7 +108,7 @@ async def comparison_agent(question, answer1, answer2, answer3 , mistral):
                     - Relevance: How well does the answer align with the specific requirements and context of the question?
                     - Depth: How effectively does the answer explore underlying principles, connections, and implications beyond surface-level details?
 
-                    For each criterion, choose the better answer (either Answer 1, Answer 2 or Answer 3) and explain why. Then, select an overall winner based on these three categories.
+                    For each criterion, choose the better answer (either Answer 1, Answer 2 or Answer 3) and explain why. Then, select an overall winner based on these five categories.
                      """})
     messages.append({"role": "system", "content": f"Here is the question: {question}"})
     messages.append({"role": "user", "content": f"Here is answer 1: {answer1}"})
