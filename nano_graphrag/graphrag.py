@@ -54,7 +54,7 @@ class GraphRAG:
     )
     # graph mode
     enable_local: bool = True
-    enable_naive_rag: bool = False
+    enable_naive_rag: bool = True
 
     # text chunking
     chunk_func: Callable[
