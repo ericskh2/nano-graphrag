@@ -101,9 +101,9 @@ async def main():
             )
         messages = []
         messages.append({"role": "system", "content": """
-                        You are an expert tasked with evaluating two answers to the same question based on five criteria: *Comprehensiveness, **Diversity, **Empowerment**, **Relevance** and **Depth**.
+                        You are an expert tasked with evaluating two answers to the same question based on the following criteria.
                          ---Goal---
-                        You will evaluate two answers to the same question based on five criteria: *Comprehensiveness, **Diversity, **Empowerment**, **Relevance** and **Depth**.
+                        You will evaluate two answers to the same question based on the following criteria.
     
                         - Comprehensiveness: How much detail does the answer provide to cover all aspects and details of the question?
                         - Diversity: How varied and rich is the answer in providing different perspectives and insights on the question?
