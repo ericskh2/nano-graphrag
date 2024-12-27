@@ -98,9 +98,9 @@ def comparison_agent(question, answer1, answer2, answer3 , mistral):
         )
     messages = []
     messages.append({"role": "system", "content": """
-                     You are an expert tasked with evaluating two answers to the same question based on three criteria: *Comprehensiveness, **Diversity, and **Empowerment**.
+                     You are an expert tasked with evaluating two answers to the same question based on five criteria: *Comprehensiveness, **Diversity, **Empowerment**, **Relevance** and **Depth**.
                      ---Goal---
-                    You will evaluate two answers to the same question based on three criteria: *Comprehensiveness, **Diversity, and **Empowerment*.
+                    You will evaluate two answers to the same question based on five criteria: *Comprehensiveness, **Diversity, **Empowerment**, **Relevance** and **Depth**.
 
                     - Comprehensiveness: How much detail does the answer provide to cover all aspects and details of the question?
                     - Diversity: How varied and rich is the answer in providing different perspectives and insights on the question?
